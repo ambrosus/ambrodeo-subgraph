@@ -1,49 +1,41 @@
 specVersion: 1.1.0
-description: Astra is a decentralized protocol for automated token exchange on Airdao.
-repository: https://github.com/ambrosus/astra-subgraph
+description: 
+repository: https://github.com/ambrosus/ambrodeo-subgraph
 schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: Factory
+    name: TokenFactory
     network: ambnet
     source:
-      address: '0x2b6852CeDEF193ece9814Ee99BE4A4Df7F463557'
+      address: ''
       abi: Factory
-      startBlock: 31000000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       file: ./src/mappings/factory.ts
       entities:
-        - Pair
         - Token
       abis:
         - name: Factory
           file: ./abis/factory.json
-        - name: ERC20
-          file: ./abis/ERC20.json
-        - name: ERC20SymbolBytes
-          file: ./abis/ERC20SymbolBytes.json
-        - name: ERC20NameBytes
-          file: ./abis/ERC20NameBytes.json
       eventHandlers:
-        - event: PairCreated(indexed address,indexed address,address,uint256)
-          handler: handleNewPair
+        - event: TokenCreated(address,address,string,string,uint256,uint256[],uint256)
+          handler: handleTokenCreated
 templates:
   - kind: ethereum/contract
-    name: Pair
+    name: Token
     network: ambnet
     source:
-      abi: Pair
+      abi: Token?
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       file: ./src/mappings/core.ts
       entities:
-        - Pair
         - Token
       abis:
         - name: Pair
