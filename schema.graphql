@@ -6,12 +6,9 @@ type Token @entity {
   symbol: String!                  # Token symbol
   initialSupply: BigInt!           # Initial supply at creation
   totalSupply: BigInt!             # Current total supply
-  curve: Curve!                    # Reference to the bonding curve
+  curvePoints: [BigInt!]!                    # Reference to the bonding curve
   holders: [Holder!] @derivedFrom(field: "token")
-  orders: [Order!] @derivedFrom(field: "token")
   trades: [Trade!] @derivedFrom(field: "token")
-  royalties: [Royalty!] @derivedFrom(field: "token")
-  insiders: [Insider!] @derivedFrom(field: "token")
   createdAt: BigInt!               # Timestamp of creation
 }
 
@@ -20,11 +17,7 @@ type User @entity {
   id: ID!                          # User address
   tokensCreated: [Token!] @derivedFrom(field: "creator")
   holdings: [Holder!] @derivedFrom(field: "user")
-  orders: [Order!] @derivedFrom(field: "user")
-  tradesAsBuyer: [Trade!] @derivedFrom(field: "buyer")
-  tradesAsSeller: [Trade!] @derivedFrom(field: "seller")
-  royaltiesReceived: [Royalty!] @derivedFrom(field: "recipient")
-  royaltiesPaid: [Royalty!] @derivedFrom(field: "payer")
+  trades: [Trade!] @derivedFrom(field: "user")
   isInsider: Boolean!              # Indicates if the user is an insider
 }
 
@@ -34,59 +27,18 @@ type Holder @entity {
   token: Token!                    # Reference to the Token
   user: User!                      # Reference to the User
   balance: BigInt!                 # Current balance
-  updatedAt: BigInt!               # Timestamp of last update
-}
-
-# Order entity represents buy/sell orders placed on the platform
-type Order @entity {
-  id: ID!                          # Unique order identifier
-  token: Token!                    # Reference to the Token
-  user: User!                      # User who placed the order
-  amount: BigInt!                  # Amount of tokens
-  price: BigInt!                   # Price per token
-  orderType: String!               # "buy" or "sell"
-  status: String!                  # "open", "executed", "cancelled"
-  createdAt: BigInt!               # Timestamp of order creation
-  executedAt: BigInt               # Timestamp of order execution (if executed)
 }
 
 # Trade entity captures executed trades between users
 type Trade @entity {
   id: ID!                          # Unique trade identifier
   token: Token!                    # Reference to the Token
-  buyer: User!                     # Buyer in the trade
-  seller: User!                    # Seller in the trade
+  user: User!                      # Buyer in the trade
   amount: BigInt!                  # Amount traded
   price: BigInt!                   # Price per token at execution
   fees: BigInt!                    # Fees applied to the trade
   timestamp: BigInt!               # Timestamp of trade execution
-}
-
-# Curve entity represents the bonding curve of a token
-type Curve @entity {
-  id: ID!                          # Unique identifier (token address)
-  token: Token!                    # Reference to the Token
-  points: [BigInt!]                # Array of curve points
-  updatedAt: BigInt!               # Timestamp of last update
-}
-
-# Royalty entity records royalty payments
-type Royalty @entity {
-  id: ID!                          # Unique identifier
-  token: Token!                    # Reference to the Token
-  recipient: User!                 # Royalty recipient
-  payer: User!                     # Royalty payer
-  amount: BigInt!                  # Amount paid
-  timestamp: BigInt!               # Timestamp of payment
-}
-
-# Insider entity tracks insiders for each token
-type Insider @entity {
-  id: ID!                          # Unique identifier (token address + user address)
-  token: Token!                    # Reference to the Token
-  user: User!                      # Reference to the User
-  addedAt: BigInt!                 # Timestamp when the user was added as an insider
-  removedAt: BigInt                # Timestamp when the user was removed as an insider (null if still an insider)
+  isBuy: Boolean!                  # Indicates if the user is the buyer
 }
 
 # Candle entity for time-based aggregations (e.g., hourly, daily)

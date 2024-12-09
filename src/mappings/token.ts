@@ -1,30 +1,35 @@
-import { TokenDeployed } from '../generated/TokenFactory/TokenFactory'
-import { Token, User } from '../generated/schema'
-import { DataSourceContext, DataSourceTemplate } from '@graphprotocol/graph-ts'
+import { CreateToken } from '../types/AMBRodeo/AMBRodeo'
+import { Token, User, Holder } from '../types/schema'
+import { DataSourceContext, DataSourceTemplate, BigInt } from '@graphprotocol/graph-ts'
+import { Transfer } from '../types/templates/Token/Token'
+import { store } from '@graphprotocol/graph-ts'
 
-export function handleTokenCreated(event: TokenDeployed): void {
-  // Create or load the User entity
-  let user = User.load(event.params.user.toHex())
-  if (user == null) {
-    user = new User(event.params.user.toHex())
-    user.isInsider = false
-    user.save()
+export function handleTransfer(event: Transfer): void {
+  let token = Token.load(event.address.toHexString())
+  if (!token) return
+
+  // Handle FROM address balance
+  let fromHolderId = event.address.toHexString() + '-' + event.params.from.toHexString()
+  let fromHolder = Holder.load(fromHolderId)
+  if (fromHolder) {
+    fromHolder.balance = fromHolder.balance.minus(event.params.value)
+    fromHolder.save()
+    
+    // Remove holder entity if balance becomes zero
+    if (fromHolder.balance.equals(BigInt.fromI32(0))) {
+      store.remove('Holder', fromHolderId)
+    }
   }
 
-  // Create the Token entity
-  let token = new Token(event.params.tokenAddress.toHex())
-  token.creator = user.id
-  token.name = event.params.name
-  token.symbol = event.params.symbol
-  token.initialSupply = event.params.totalSupply
-  token.totalSupply = event.params.totalSupply
-  token.createdAt = event.block.timestamp
-  token.save()
-
-  // Create a new context for the template
-  let context = new DataSourceContext()
-  context.setString('tokenAddress', event.params.tokenAddress.toHexString())
-
-  // Create a new data source from template
-  DataSourceTemplate.create('Token', [event.params.tokenAddress.toHexString()])
+  // Handle TO address balance
+  let toHolderId = event.address.toHexString() + '-' + event.params.to.toHexString()
+  let toHolder = Holder.load(toHolderId)
+  if (!toHolder) {
+    toHolder = new Holder(toHolderId)
+    toHolder.token = token.id
+    toHolder.user = event.params.to.toHexString()
+    toHolder.balance = BigInt.fromI32(0)
+  }
+  toHolder.balance = toHolder.balance.plus(event.params.value)
+  toHolder.save()
 }

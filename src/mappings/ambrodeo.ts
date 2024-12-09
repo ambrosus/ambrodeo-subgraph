@@ -3,7 +3,7 @@ import {
   CreateToken as CreateTokenEvent,
   TokenTrade as TokenTradeEvent
 } from '../types/AMBRodeo/AMBRodeo'
-import { Token, User, Curve, Holder, Insider, Trade, Royalty, Candle } from '../types/schema'
+import { Token, User, Holder,Trade, Candle } from '../types/schema'
 import { Token as TokenTemplate } from '../types/templates'
 
 export function handleCreateToken(event: CreateTokenEvent): void {
@@ -19,20 +19,12 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   const tokenAddress = event.params.token.toHexString()
   const token = new Token(tokenAddress)
   token.creator = creator.id
-  token.name = event.params.name
+  token.name = event.params.name.toString()
   token.symbol = event.params.symbol
   token.initialSupply = event.params.totalSupply
   token.totalSupply = event.params.totalSupply
   token.createdAt = event.block.timestamp
-
-  // Create and link the curve
-  const curve = new Curve(tokenAddress)
-  curve.token = token.id
-  curve.points = event.params.stepPrice
-  curve.updatedAt = event.block.timestamp
-  curve.save()
-
-  token.curve = curve.id
+  token.curvePoints = event.params.stepPrice
   token.save()
 
   // Create initial holder entry for creator
@@ -41,17 +33,7 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   holder.token = token.id
   holder.user = creator.id
   holder.balance = BigInt.zero()
-  holder.updatedAt = event.block.timestamp
   holder.save()
-
-  // Create initial insider entry for creator
-  const insiderId = tokenAddress + '-' + event.params.account.toHexString()
-  const insider = new Insider(insiderId)
-  insider.token = token.id
-  insider.user = creator.id
-  insider.addedAt = event.block.timestamp
-  insider.removedAt = null
-  insider.save()
 
   // Start indexing events from the new token contract
   TokenTemplate.create(event.params.token)
@@ -93,31 +75,32 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   } else {
     holder.balance = holder.balance.minus(event.params.input)
   }
-  holder.updatedAt = event.block.timestamp
   holder.save()
+
+  // TODO: Calculate actual price from input/output ratio
+  let price = BigInt.fromI32(0)
+  if (event.params.balanceToken > BigInt.fromI32(0)) {
+    price = event.params.reserveTokens.div(event.params.balanceToken)
+  }
 
   // Create trade record
   const trade = new Trade(tradeId)
   trade.token = tokenAddress
-  trade.buyer = traderAddress
-  trade.seller = traderAddress // In AMM trades, the trader is both buyer and seller
+  trade.user = traderAddress
   trade.amount = event.params.isBuy ? event.params.output : event.params.input
   // TODO: Calculate actual price from input/output ratio
-  trade.price = BigInt.fromI32(0)
-  // TODO: Determine fee calculation method
+  trade.price = price
+  // TODO: Calculate actual fees
   trade.fees = BigInt.fromI32(0)
   trade.timestamp = event.block.timestamp
   trade.save()
 
   // Update candle data
-  // TODO: Calculate actual price from input/output ratio
-  const price = BigInt.fromI32(0)
   updateCandle(
-    token,
+    token!,
     price,
     event.params.isBuy ? event.params.output : event.params.input,
-    event.block.timestamp,
-    traderAddress
+    event.block.timestamp
   )
 }
 
@@ -126,14 +109,13 @@ function updateCandle(
   token: Token,
   price: BigInt,
   amount: BigInt,
-  timestamp: BigInt,
-  trader: string
+  timestamp: BigInt
 ): void {
   const hourlyId = token.id + '-' + timestamp.div(BigInt.fromI32(3600)).toString()
   const dailyId = token.id + '-' + timestamp.div(BigInt.fromI32(86400)).toString()
   
-  updateCandleEntity(hourlyId, token.id, "hourly", price, amount, timestamp, trader)
-  updateCandleEntity(dailyId, token.id, "daily", price, amount, timestamp, trader)
+  updateCandleEntity(hourlyId, token.id, "hourly", price, amount, timestamp)
+  updateCandleEntity(dailyId, token.id, "daily", price, amount, timestamp)
 }
 
 function updateCandleEntity(
@@ -143,7 +125,6 @@ function updateCandleEntity(
   price: BigInt,
   amount: BigInt,
   timestamp: BigInt,
-  trader: string
 ): void {
   let candle = Candle.load(id)
   const intervalSeconds = interval == "hourly" ? 3600 : 86400
@@ -160,8 +141,6 @@ function updateCandleEntity(
     candle.low = price
     candle.close = price
     candle.volume = amount
-    candle.uniqueBuyers = 1
-    candle.uniqueSellers = 1
   } else {
     candle.high = price.gt(candle.high) ? price : candle.high
     candle.low = price.lt(candle.low) ? price : candle.low
