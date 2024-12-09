@@ -22,7 +22,7 @@ dataSources:
         - name: Factory
           file: ./abis/factory.json
       eventHandlers:
-        - event: TokenCreated(address,address,string,string,uint256,uint256[],uint256)
+        - event: TokenDeployed(indexed address,indexed address,indexed string,string,uint256)
           handler: handleTokenCreated
 templates:
   - kind: ethereum/contract

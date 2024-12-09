@@ -1,20 +1,30 @@
-import { TokenCreated } from '../generated/TokenFactory/TokenFactory'
+import { TokenDeployed } from '../generated/TokenFactory/TokenFactory'
 import { Token, User } from '../generated/schema'
+import { DataSourceContext, DataSourceTemplate } from '@graphprotocol/graph-ts'
 
-export function handleTokenCreated(event: TokenCreated): void {
-  // Create or load the Token entity
+export function handleTokenCreated(event: TokenDeployed): void {
+  // Create or load the User entity
+  let user = User.load(event.params.user.toHex())
+  if (user == null) {
+    user = new User(event.params.user.toHex())
+    user.isInsider = false
+    user.save()
+  }
+
+  // Create the Token entity
   let token = new Token(event.params.tokenAddress.toHex())
+  token.creator = user.id
   token.name = event.params.name
   token.symbol = event.params.symbol
-  token.creator = event.params.creator.toHex()
-  token.initialSupply = event.params.initialSupply
+  token.initialSupply = event.params.totalSupply
+  token.totalSupply = event.params.totalSupply
   token.createdAt = event.block.timestamp
   token.save()
 
-  // Create or load the User entity
-  let user = User.load(event.params.creator.toHex())
-  if (user == null) {
-    user = new User(event.params.creator.toHex())
-    user.save()
-  }
+  // Create a new context for the template
+  let context = new DataSourceContext()
+  context.setString('tokenAddress', event.params.tokenAddress.toHexString())
+
+  // Create a new data source from template
+  DataSourceTemplate.create('Token', [event.params.tokenAddress.toHexString()])
 }
