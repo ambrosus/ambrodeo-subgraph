@@ -5,51 +5,47 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: TokenFactory
+    name: AMBRodeo
     network: ambnet
     source:
-      address: ''
-      abi: Factory
-      startBlock: 0
+      address: '0x54844D06F1e66329a810a8ae24c8E1aFA890eDB4'
+      abi: AMBRodeo
+      startBlock: 12
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/mappings/factory.ts
+      file: ./src/mappings/ambrodeo.ts
       entities:
         - Token
       abis:
-        - name: Factory
-          file: ./abis/factory.json
+        - name: AMBRodeo
+          file: ./abis/AMBRodeo.json
+        - name: Token
+          file: ./abis/token.json
       eventHandlers:
-        - event: TokenDeployed(indexed address,indexed address,indexed string,string,uint256)
-          handler: handleTokenCreated
+        - event: CreateToken(indexed address,indexed address,indexed string,string,uint256,string,uint256,uint128[])
+          handler: handleCreateToken
+        - event: TokenTrade(indexed address,indexed address,uint256,uint256,uint256,uint256,bool)
+          handler: handleBuyTokens
 templates:
   - kind: ethereum/contract
     name: Token
     network: ambnet
     source:
-      abi: Token?
+      abi: Token
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/mappings/core.ts
+      file: ./src/mappings/token.ts
       entities:
         - Token
       abis:
-        - name: Pair
-          file: ./abis/pair.json
-        - name: Factory
-          file: ./abis/factory.json
+        - name: AmbRodeo
+          file: ./abis/AmbRodeo.json
+        - name: Token
+          file: ./abis/token.json
       eventHandlers:
-        - event: Mint(indexed address,uint256,uint256)
-          handler: handleMint
-        - event: Burn(indexed address,uint256,uint256,indexed address)
-          handler: handleBurn
-        - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
-          handler: handleSwap
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-        - event: Sync(uint112,uint112)
-          handler: handleSync
