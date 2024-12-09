@@ -27,7 +27,7 @@ dataSources:
         - event: CreateToken(indexed address,indexed address,indexed string,string,uint256,string,uint256,uint128[])
           handler: handleCreateToken
         - event: TokenTrade(indexed address,indexed address,uint256,uint256,uint256,uint256,bool)
-          handler: handleBuyTokens
+          handler: handleTokenTrade
 templates:
   - kind: ethereum/contract
     name: Token
