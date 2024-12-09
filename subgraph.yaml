@@ -1,5 +1,5 @@
 specVersion: 1.1.0
-description: 
+description: Description
 repository: https://github.com/ambrosus/ambrodeo-subgraph
 schema:
   file: ./schema.graphql
