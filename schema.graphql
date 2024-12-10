@@ -53,6 +53,4 @@ type Candle @entity {
   low: BigInt!                     # Lowest price in the interval
   close: BigInt!                   # Closing price
   volume: BigInt!                  # Total volume traded
-  uniqueBuyers: Int!               # Number of unique buyer addresses
-  uniqueSellers: Int!              # Number of unique seller addresses
 }

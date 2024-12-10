@@ -1,6 +1,5 @@
-import { CreateToken } from '../types/AMBRodeo/AMBRodeo'
-import { Token, User, Holder } from '../types/schema'
-import { DataSourceContext, DataSourceTemplate, BigInt } from '@graphprotocol/graph-ts'
+import { Token, Holder } from '../types/schema'
+import {  BigInt } from '@graphprotocol/graph-ts'
 import { Transfer } from '../types/templates/Token/Token'
 import { store } from '@graphprotocol/graph-ts'
 

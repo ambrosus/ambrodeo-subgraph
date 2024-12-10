@@ -1,10 +1,20 @@
-import { BigInt, Address } from '@graphprotocol/graph-ts'
+import { log, BigInt } from '@graphprotocol/graph-ts'
 import {
   CreateToken as CreateTokenEvent,
   TokenTrade as TokenTradeEvent
 } from '../types/AMBRodeo/AMBRodeo'
 import { Token, User, Holder,Trade, Candle } from '../types/schema'
 import { Token as TokenTemplate } from '../types/templates'
+
+const INTERVALS: Array<{name: string, seconds: BigInt}> = [
+  {name: "1m", seconds: BigInt.fromI32(60)},
+  {name: "5m", seconds: BigInt.fromI32(300)},
+  {name: "15m", seconds: BigInt.fromI32(900)},
+  {name: "30m", seconds: BigInt.fromI32(1800)},
+  {name: "1h", seconds: BigInt.fromI32(3600)},
+  {name: "4h", seconds: BigInt.fromI32(14400)},
+  {name: "1d", seconds: BigInt.fromI32(86400)}
+];
 
 export function handleCreateToken(event: CreateTokenEvent): void {
   // Create or load the creator user
@@ -54,9 +64,9 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
 
   // Load token and update supply
   const token = Token.load(tokenAddress)
-  if (token) {
-    // TODO: Determine if we need to update total supply based on reserve changes
-    token.save()
+  if (token === null) {
+      log.error('Token not found: {}', [tokenAddress])
+      return
   }
 
   // Update or create holder balance
@@ -78,19 +88,16 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   holder.save()
 
   // TODO: Calculate actual price from input/output ratio
-  let price = BigInt.fromI32(0)
-  if (event.params.balanceToken > BigInt.fromI32(0)) {
-    price = event.params.reserveTokens.div(event.params.balanceToken)
-  }
+  const stepSize = token!.totalSupply.div(BigInt.fromString(token!.curvePoints.length.toString()))
+  const step = token!.totalSupply.minus(event.params.balanceToken).div(stepSize)
+  const price = token!.curvePoints[step.toI32()]
 
   // Create trade record
   const trade = new Trade(tradeId)
   trade.token = tokenAddress
   trade.user = traderAddress
   trade.amount = event.params.isBuy ? event.params.output : event.params.input
-  // TODO: Calculate actual price from input/output ratio
   trade.price = price
-  // TODO: Calculate actual fees
   trade.fees = BigInt.fromI32(0)
   trade.timestamp = event.block.timestamp
   trade.save()
@@ -111,11 +118,25 @@ function updateCandle(
   amount: BigInt,
   timestamp: BigInt
 ): void {
-  const hourlyId = token.id + '-' + timestamp.div(BigInt.fromI32(3600)).toString()
-  const dailyId = token.id + '-' + timestamp.div(BigInt.fromI32(86400)).toString()
-  
-  updateCandleEntity(hourlyId, token.id, "hourly", price, amount, timestamp)
-  updateCandleEntity(dailyId, token.id, "daily", price, amount, timestamp)
+  // Update candles for all intervals
+  for (let i = 0; i < INTERVALS.length; i++) {
+    const interval = INTERVALS[i];
+    const candleId = token.id + 
+      '-' + 
+      interval.name + 
+      '-' + 
+      timestamp.div(BigInt.fromI32(interval.seconds)).toString();
+    
+    updateCandleEntity(
+      candleId,
+      token.id,
+      interval.name,
+      price,
+      amount,
+      timestamp,
+      interval.seconds
+    );
+  }
 }
 
 function updateCandleEntity(
@@ -125,9 +146,9 @@ function updateCandleEntity(
   price: BigInt,
   amount: BigInt,
   timestamp: BigInt,
+  intervalSeconds: BigInt
 ): void {
   let candle = Candle.load(id)
-  const intervalSeconds = interval == "hourly" ? 3600 : 86400
   const startTime = timestamp.div(BigInt.fromI32(intervalSeconds)).times(BigInt.fromI32(intervalSeconds))
   
   if (candle === null) {
@@ -146,8 +167,6 @@ function updateCandleEntity(
     candle.low = price.lt(candle.low) ? price : candle.low
     candle.close = price
     candle.volume = candle.volume.plus(amount)
-    // Note: For proper unique traders counting, you'd need to maintain sets of addresses
-    // This is a simplified version
   }
   
   candle.save()
