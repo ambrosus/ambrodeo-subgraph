@@ -6,14 +6,24 @@ import {
 import { Token, User, Holder,Trade, Candle } from '../types/schema'
 import { Token as TokenTemplate } from '../types/templates'
 
-const INTERVALS: Array<{name: string, seconds: BigInt}> = [
-  {name: "1m", seconds: BigInt.fromI32(60)},
-  {name: "5m", seconds: BigInt.fromI32(300)},
-  {name: "15m", seconds: BigInt.fromI32(900)},
-  {name: "30m", seconds: BigInt.fromI32(1800)},
-  {name: "1h", seconds: BigInt.fromI32(3600)},
-  {name: "4h", seconds: BigInt.fromI32(14400)},
-  {name: "1d", seconds: BigInt.fromI32(86400)}
+class Interval {
+  name: string
+  seconds: BigInt
+
+  constructor(name: string, seconds: BigInt) {
+    this.name = name
+    this.seconds = seconds
+  }
+}
+
+const INTERVALS: Interval[] = [
+  new Interval("1m", BigInt.fromI32(60)),
+  new Interval("5m", BigInt.fromI32(300)),
+  new Interval("15m", BigInt.fromI32(900)),
+  new Interval("30m", BigInt.fromI32(1800)),
+  new Interval("1h", BigInt.fromI32(3600)),
+  new Interval("4h", BigInt.fromI32(14400)),
+  new Interval("1d", BigInt.fromI32(86400))
 ];
 
 export function handleCreateToken(event: CreateTokenEvent): void {
@@ -149,14 +159,14 @@ function updateCandleEntity(
   intervalSeconds: BigInt
 ): void {
   let candle = Candle.load(id)
-  const startTime = timestamp.div(BigInt.fromI32(intervalSeconds)).times(BigInt.fromI32(intervalSeconds))
+  const startTime = timestamp.div(intervalSeconds).times(intervalSeconds)
   
   if (candle === null) {
     candle = new Candle(id)
     candle.token = tokenId
     candle.interval = interval
     candle.startTime = startTime
-    candle.endTime = startTime.plus(BigInt.fromI32(intervalSeconds))
+    candle.endTime = startTime.plus(intervalSeconds)
     candle.open = price
     candle.high = price
     candle.low = price
