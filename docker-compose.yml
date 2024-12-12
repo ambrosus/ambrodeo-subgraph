@@ -19,7 +19,7 @@ services:
       postgres_pass: let-me-in
       postgres_db: graph-node
       ipfs: "ipfs:5001"
-      ethereum: "ambnet:https://network-archive.ambrosus.io"
+      ethereum: "ambnet-test:https://network-archive.ambrosus-test.io"
       GRAPH_LOG: info
   ipfs:
     image: ipfs/kubo:v0.17.0

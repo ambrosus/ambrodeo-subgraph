@@ -207,7 +207,7 @@
           "type": "address"
         },
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "string",
           "name": "name",
           "type": "string"
@@ -226,9 +226,9 @@
         },
         {
           "indexed": false,
-          "internalType": "string",
-          "name": "imageUrl",
-          "type": "string"
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
         },
         {
           "indexed": false,
@@ -410,6 +410,32 @@
     },
     {
       "inputs": [],
+      "name": "PERCENT_FACOTR",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "activateToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "balanceToDex",
       "outputs": [
         {
@@ -558,9 +584,9 @@
               "type": "uint128[]"
             },
             {
-              "internalType": "string",
-              "name": "imageUrl",
-              "type": "string"
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
             }
           ],
           "internalType": "struct AMBRodeo.Params",
@@ -571,6 +597,19 @@
       "name": "createToken",
       "outputs": [],
       "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "deactivateToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -588,7 +627,7 @@
     },
     {
       "inputs": [],
-      "name": "exchangeFee",
+      "name": "exchangeFeePercent",
       "outputs": [
         {
           "internalType": "uint128",
@@ -749,9 +788,9 @@
     {
       "inputs": [
         {
-          "internalType": "uint128",
-          "name": "amount",
-          "type": "uint128"
+          "internalType": "uint32",
+          "name": "exchangeFeePercent_",
+          "type": "uint32"
         }
       ],
       "name": "setExchangeFee",

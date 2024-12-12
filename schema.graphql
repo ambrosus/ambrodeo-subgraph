@@ -6,7 +6,8 @@ type Token @entity {
   symbol: String!                  # Token symbol
   initialSupply: BigInt!           # Initial supply at creation
   totalSupply: BigInt!             # Current total supply
-  curvePoints: [BigInt!]!                    # Reference to the bonding curve
+  curvePoints: [BigInt!]!          # Reference to the bonding curve
+  imageUrl: String!                # URL to the token image
   holders: [Holder!] @derivedFrom(field: "token")
   trades: [Trade!] @derivedFrom(field: "token")
   createdAt: BigInt!               # Timestamp of creation

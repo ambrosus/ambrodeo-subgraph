@@ -6,14 +6,14 @@
     "build": "run-s codegen && graph build",
     "buildonly": "graph build",
     "codegen": "graph codegen --output-dir src/types/",
-    "create": "graph create --node https://graph-node-api.ambrosus-test.io/deploy airdao/ambrodeo-test-c",
-    "deploy": "graph deploy --node https://graph-node-api.ambrosus-test.io/deploy airdao/ambrodeo-test-c",
+    "create": "graph create --node https://graph-node-api.ambrosus-test.io/deploy airdao/ambrodeo",
+    "deploy": "graph deploy --node https://graph-node-api.ambrosus-test.io/deploy airdao/ambrodeo",
     "create-local": "graph create airdao/ambrodeo --node http://127.0.0.1:8020",
     "deploy-local": "graph deploy airdao/ambrodeo  --ipfs http://localhost:5001 --node http://127.0.0.1:8020"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "^0.90.1",
-    "@graphprotocol/graph-ts": "^0.35.1",
+    "@graphprotocol/graph-ts": "^0.36.0",
     "@typescript-eslint/eslint-plugin": "^2.0.0",
     "@typescript-eslint/parser": "^2.0.0",
     "npm-run-all": "^4.1.5",

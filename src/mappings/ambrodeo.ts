@@ -1,4 +1,4 @@
-import { log, BigInt } from '@graphprotocol/graph-ts'
+import { log, BigInt, ethereum } from '@graphprotocol/graph-ts'
 import {
   CreateToken as CreateTokenEvent,
   TokenTrade as TokenTradeEvent
@@ -45,6 +45,7 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   token.totalSupply = event.params.totalSupply
   token.createdAt = event.block.timestamp
   token.curvePoints = event.params.stepPrice
+  token.imageUrl = event.params.data.toString()
   token.save()
 
   // Create initial holder entry for creator
@@ -97,9 +98,8 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   }
   holder.save()
 
-  // TODO: Calculate actual price from input/output ratio
   const stepSize = token.totalSupply.div(BigInt.fromString(token.curvePoints.length.toString()))
-  const step = token.totalSupply.minus(event.params.balanceToken).div(stepSize)
+  const step = token.totalSupply.minus(event.params.reserveTokens).div(stepSize)
   const price = token.curvePoints[step.toI32()]
 
   // Create trade record
@@ -108,7 +108,7 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   trade.user = traderAddress
   trade.amount = event.params.isBuy ? event.params.output : event.params.input
   trade.price = price
-  trade.fees = BigInt.fromI32(0)
+  trade.fees = event.params.exchangeFee
   trade.timestamp = event.block.timestamp
   trade.isBuy = event.params.isBuy
   trade.save()
