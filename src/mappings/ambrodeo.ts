@@ -98,9 +98,9 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   holder.save()
 
   // TODO: Calculate actual price from input/output ratio
-  const stepSize = token!.totalSupply.div(BigInt.fromString(token!.curvePoints.length.toString()))
-  const step = token!.totalSupply.minus(event.params.balanceToken).div(stepSize)
-  const price = token!.curvePoints[step.toI32()]
+  const stepSize = token.totalSupply.div(BigInt.fromString(token.curvePoints.length.toString()))
+  const step = token.totalSupply.minus(event.params.balanceToken).div(stepSize)
+  const price = token.curvePoints[step.toI32()]
 
   // Create trade record
   const trade = new Trade(tradeId)
@@ -110,11 +110,12 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   trade.price = price
   trade.fees = BigInt.fromI32(0)
   trade.timestamp = event.block.timestamp
+  trade.isBuy = event.params.isBuy
   trade.save()
 
   // Update candle data
   updateCandle(
-    token!,
+    token,
     price,
     event.params.isBuy ? event.params.output : event.params.input,
     event.block.timestamp
@@ -135,7 +136,7 @@ function updateCandle(
       '-' + 
       interval.name + 
       '-' + 
-      timestamp.div(BigInt.fromI32(interval.seconds)).toString();
+      timestamp.div(interval.seconds).toString();
     
     updateCandleEntity(
       candleId,
