@@ -46,6 +46,7 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   token.createdAt = event.block.timestamp
   token.curvePoints = event.params.stepPrice
   token.imageUrl = event.params.data.toString()
+  token.lastPrice = BigInt.zero()
   token.save()
 
   // Create initial holder entry for creator
@@ -98,9 +99,12 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   }
   holder.save()
 
-  const stepSize = token.totalSupply.div(BigInt.fromString(token.curvePoints.length.toString()))
-  const step = token.totalSupply.minus(event.params.reserveTokens).div(stepSize)
-  const price = token.curvePoints[step.toI32()]
+  const price = event.params.isBuy ? event.params.output.div(event.params.input) : event.params.input.div(event.params.output)
+  log.info("Price: {}", [price.toString()])
+
+  //Update lastPrice
+  token.lastPrice = price
+  token.save()
 
   // Create trade record
   const trade = new Trade(tradeId)
