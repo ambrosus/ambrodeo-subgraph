@@ -8,7 +8,7 @@ dataSources:
     name: AMBRodeo
     network: ambnet-test
     source:
-      address: '0x1831312B959f0aa66Abb1504125ab9dE9c33aA31'
+      address: '0xA701344CF6cF7e1Fc204546B2fb79530A4198B52'
       abi: AMBRodeo
       startBlock: 2800000
     mapping:
