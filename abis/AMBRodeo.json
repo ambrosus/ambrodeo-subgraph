@@ -2,102 +2,28 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "tokenBalance",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "AMBRodeo__BurnTokensError",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "AMBRodeo__InvalidInitializeToken",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "string",
           "name": "reason",
           "type": "string"
         }
       ],
-      "name": "AMBRodeo__InvalidTokenCreationParams",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "AMBRodeo__NotEnoughIncom",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "AMBRodeo__NotEnoughPayment",
+      "name": "AMBRodeoError",
       "type": "error"
     },
     {
       "inputs": [
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        }
-      ],
-      "name": "AMBRodeo__TokenNotActive",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        }
-      ],
-      "name": "AMBRodeo__TokenNotExist",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        }
-      ],
-      "name": "AMBRodeo__TokenTransferError",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
         {
           "internalType": "uint256",
-          "name": "tokenBalance",
+          "name": "",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "balance",
+          "name": "",
           "type": "uint256"
         }
       ],
-      "name": "AMBRodeo__TransferToDexError",
+      "name": "AMBRodeoErrorCreateFee",
       "type": "error"
     },
     {
@@ -157,51 +83,13 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "address",
           "name": "token",
           "type": "address"
         },
         {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "newBalance",
-          "type": "uint256"
-        }
-      ],
-      "name": "ChangeBalanceToDexForToken",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "to",
-          "type": "address"
-        }
-      ],
-      "name": "ChangeOwner",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "indexed": true,
           "internalType": "address",
           "name": "account",
           "type": "address"
@@ -220,27 +108,9 @@
         },
         {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "totalSupply",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
           "internalType": "bytes",
           "name": "data",
           "type": "bytes"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "value",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint128[]",
-          "name": "stepPrice",
-          "type": "uint128[]"
         }
       ],
       "name": "CreateToken",
@@ -250,7 +120,7 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "address",
           "name": "to",
           "type": "address"
@@ -333,31 +203,25 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "input",
+          "name": "amountIn",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "output",
+          "name": "excludeFee",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "reserveTokens",
+          "name": "amountOut",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "balanceToken",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "exchangeFee",
+          "name": "liquidity",
           "type": "uint256"
         },
         {
@@ -403,46 +267,7 @@
     },
     {
       "inputs": [],
-      "name": "MAX_STEPS",
-      "outputs": [
-        {
-          "internalType": "uint32",
-          "name": "",
-          "type": "uint32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "PERCENT_FACOTR",
-      "outputs": [
-        {
-          "internalType": "uint32",
-          "name": "",
-          "type": "uint32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        }
-      ],
-      "name": "activateToken",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "balanceToDex",
+      "name": "PERCENT_FACTOR",
       "outputs": [
         {
           "internalType": "uint256",
@@ -469,69 +294,30 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "amountIn",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "reserve",
+          "name": "amountCoinIn",
           "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "totalSupply",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint128[]",
-          "name": "steps",
-          "type": "uint128[]"
         }
       ],
       "name": "calculateBuy",
       "outputs": [
         {
           "internalType": "uint256",
-          "name": "amountOut",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "pure",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "amountIn",
+          "name": "amountTokenOut",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "reserve",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "totalSupply",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint128[]",
-          "name": "steps",
-          "type": "uint128[]"
-        }
-      ],
-      "name": "calculateSell",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "amountOut",
+          "name": "newReserveCoin",
           "type": "uint256"
         }
       ],
-      "stateMutability": "pure",
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -542,24 +328,22 @@
           "type": "address"
         },
         {
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "amountTokenIn",
+          "type": "uint256"
         }
       ],
-      "name": "changeOwner",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "createFee",
+      "name": "calculateSell",
       "outputs": [
         {
-          "internalType": "uint128",
-          "name": "",
-          "type": "uint128"
+          "internalType": "uint256",
+          "name": "amountCoinOut",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newReserveCoin",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -568,36 +352,24 @@
     {
       "inputs": [
         {
-          "components": [
-            {
-              "internalType": "string",
-              "name": "name",
-              "type": "string"
-            },
-            {
-              "internalType": "string",
-              "name": "symbol",
-              "type": "string"
-            },
-            {
-              "internalType": "uint128",
-              "name": "totalSupply",
-              "type": "uint128"
-            },
-            {
-              "internalType": "uint128[]",
-              "name": "stepPrice",
-              "type": "uint128[]"
-            },
-            {
-              "internalType": "bytes",
-              "name": "data",
-              "type": "bytes"
-            }
-          ],
-          "internalType": "struct AMBRodeo.Params",
-          "name": "params",
-          "type": "tuple"
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "symbol",
+          "type": "string"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
         }
       ],
       "name": "createToken",
@@ -606,47 +378,8 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        }
-      ],
-      "name": "deactivateToken",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
       "inputs": [],
-      "name": "dex",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "exchangeFeePercent",
-      "outputs": [
-        {
-          "internalType": "uint128",
-          "name": "",
-          "type": "uint128"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getBalance",
+      "name": "getBalanceToDex",
       "outputs": [
         {
           "internalType": "uint256",
@@ -658,38 +391,13 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        }
-      ],
-      "name": "getStepPrice",
+      "inputs": [],
+      "name": "getCreateFee",
       "outputs": [
         {
-          "internalType": "uint128[]",
+          "internalType": "uint256",
           "name": "",
-          "type": "uint128[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        }
-      ],
-      "name": "getTokenCreator",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -697,12 +405,25 @@
     },
     {
       "inputs": [],
-      "name": "income",
+      "name": "getExchangeFee",
       "outputs": [
         {
-          "internalType": "uint128",
+          "internalType": "uint256",
           "name": "",
-          "type": "uint128"
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTotalSupply",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -713,6 +434,38 @@
       "name": "initialize",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "internalBalance",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "list",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -744,7 +497,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "amountIn",
+          "name": "amount",
           "type": "uint256"
         }
       ],
@@ -756,8 +509,21 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "setActiveToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
-          "name": "balance",
+          "name": "amount",
           "type": "uint256"
         }
       ],
@@ -769,27 +535,9 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
           "internalType": "uint256",
-          "name": "newBalance",
-          "type": "uint256"
-        }
-      ],
-      "name": "setBalanceToDexCustom",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint128",
           "name": "amount",
-          "type": "uint128"
+          "type": "uint256"
         }
       ],
       "name": "setCreateFee",
@@ -798,10 +546,17 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "setCreateToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
-          "name": "dex_",
+          "name": "dex",
           "type": "address"
         }
       ],
@@ -813,9 +568,9 @@
     {
       "inputs": [
         {
-          "internalType": "uint32",
-          "name": "exchangeFeePercent_",
-          "type": "uint32"
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
         }
       ],
       "name": "setExchangeFee",
@@ -824,10 +579,17 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "setInitLiquidity",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
-          "name": "token",
+          "name": "tokenImplementation",
           "type": "address"
         }
       ],
@@ -837,16 +599,100 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "setTotalSupply",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "setVirtualLiquidity",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
-      "name": "tokenImplemetation",
+      "name": "settings",
       "outputs": [
         {
+          "internalType": "bool",
+          "name": "createToken",
+          "type": "bool"
+        },
+        {
           "internalType": "address",
-          "name": "",
+          "name": "tokenImplemetation",
           "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "dex",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "balanceToDex",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "createFee",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "exchangeFee",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalSupply",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "virtualLiquidity",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "initLiquidity",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "tokenChangeOwner",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -860,61 +706,24 @@
       "name": "tokens",
       "outputs": [
         {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "active",
+          "type": "bool"
+        },
+        {
           "internalType": "uint256",
           "name": "balance",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "balanceToDex",
+          "name": "virtualLiquidity",
           "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "creator",
-          "type": "address"
-        },
-        {
-          "internalType": "uint128",
-          "name": "totalSupply",
-          "type": "uint128"
-        },
-        {
-          "internalType": "bool",
-          "name": "active",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "tokensCount",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "tokensList",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -928,12 +737,12 @@
           "type": "address"
         },
         {
-          "internalType": "uint128",
+          "internalType": "uint256",
           "name": "amount",
-          "type": "uint128"
+          "type": "uint256"
         }
       ],
-      "name": "transferIncome",
+      "name": "transferInternalBalance",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

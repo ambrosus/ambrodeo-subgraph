@@ -8,7 +8,7 @@ dataSources:
     name: AMBRodeo
     network: ambnet-test
     source:
-      address: '0xA701344CF6cF7e1Fc204546B2fb79530A4198B52'
+      address: '0x617e07F330c7fB77af92ea9Bc957F48C17f563Ec'
       abi: AMBRodeo
       startBlock: 2800000
     mapping:
@@ -24,10 +24,12 @@ dataSources:
         - name: Token
           file: ./abis/token.json
       eventHandlers:
-        - event: CreateToken(indexed address,indexed address,string,string,uint256,bytes,uint256,uint128[])
+        - event: CreateToken(address,address,string,string,bytes)
           handler: handleCreateToken
-        - event: TokenTrade(indexed address,indexed address,uint256,uint256,uint256,uint256,uint256,bool)
+        - event: TokenTrade(indexed address,indexed address,uint256,uint256,uint256,uint256,bool)
           handler: handleTokenTrade
+        - event: TransferToDex(indexed address,uint256,uint256,uint256)
+          handler: handleTransferToDex
 templates:
   - kind: ethereum/contract
     name: Token

@@ -1,7 +1,8 @@
 import { log, BigInt, ethereum } from '@graphprotocol/graph-ts'
 import {
   CreateToken as CreateTokenEvent,
-  TokenTrade as TokenTradeEvent
+  TokenTrade as TokenTradeEvent,
+  TransferToDex as TransferToDexEvent
 } from '../types/AMBRodeo/AMBRodeo'
 import { Token, User, Holder,Trade, Candle } from '../types/schema'
 import { Token as TokenTemplate } from '../types/templates'
@@ -41,12 +42,12 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   token.creator = creator.id
   token.name = event.params.name.toString()
   token.symbol = event.params.symbol
-  token.initialSupply = event.params.totalSupply
-  token.totalSupply = event.params.totalSupply
   token.createdAt = event.block.timestamp
-  token.curvePoints = event.params.stepPrice
-  token.imageUrl = event.params.data.toString()
+  token.data = event.params.data
   token.lastPrice = BigInt.zero()
+  token.lastPriceUpdate = event.block.timestamp
+  token.onDex = false;
+  token.reachedOneMillions = false;
   token.save()
 
   // Create initial holder entry for creator
@@ -93,26 +94,34 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   
   // Update holder balance based on input/output
   if (event.params.isBuy) {
-    holder.balance = holder.balance.plus(event.params.output)
+    holder.balance = holder.balance.plus(event.params.amountOut)
   } else {
-    holder.balance = holder.balance.minus(event.params.input)
+    holder.balance = holder.balance.minus(event.params.amountIn)
   }
   holder.save()
 
-  const price = event.params.isBuy ? event.params.output.div(event.params.input) : event.params.input.div(event.params.output)
+  const price = event.params.isBuy ? event.params.amountOut.div(event.params.amountIn) : event.params.amountIn.div(event.params.amountOut)
   log.info("Price: {}", [price.toString()])
 
   //Update lastPrice
   token.lastPrice = price
+
+  //Check if is one million amber inside the pool
+  if (event.params.liquidity.ge(BigInt.fromI32(1000000))) {
+    token.reachedOneMillions = true
+  } else {
+    token.reachedOneMillions = false
+  }
+
   token.save()
 
   // Create trade record
   const trade = new Trade(tradeId)
   trade.token = tokenAddress
   trade.user = traderAddress
-  trade.amount = event.params.isBuy ? event.params.output : event.params.input
+  trade.amount = event.params.isBuy ? event.params.amountOut : event.params.amountIn
   trade.price = price
-  trade.fees = event.params.exchangeFee
+  trade.fees = event.params.excludeFee
   trade.timestamp = event.block.timestamp
   trade.isBuy = event.params.isBuy
   trade.save()
@@ -121,9 +130,21 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   updateCandle(
     token,
     price,
-    event.params.isBuy ? event.params.output : event.params.input,
+    event.params.isBuy ? event.params.amountOut : event.params.amountIn,
     event.block.timestamp
   )
+}
+
+export function handleTransferToDex(event: TransferToDexEvent): void {
+  const tokenAddress = event.params.token.toHexString()
+  const token = Token.load(tokenAddress)
+  if (token === null) {
+      log.error('Token not found: {}', [tokenAddress])
+      return
+  }
+  token.onDex = true;
+  token.onDexSince = event.block.timestamp;
+  token.save();
 }
 
 // Helper function to update candle data

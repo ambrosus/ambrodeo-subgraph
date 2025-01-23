@@ -4,13 +4,15 @@ type Token @entity {
   creator: User!                   # Reference to the creator (User entity)
   name: String!                    # Token name
   symbol: String!                  # Token symbol
-  initialSupply: BigInt!           # Initial supply at creation
-  totalSupply: BigInt!             # Current total supply
-  curvePoints: [BigInt!]!          # Reference to the bonding curve
-  imageUrl: String!                # URL to the token image
+  data: Bytes!                     # URL to the token image
   holders: [Holder!] @derivedFrom(field: "token")
   trades: [Trade!] @derivedFrom(field: "token")
   createdAt: BigInt!               # Timestamp of creation
+  lastPriceUpdate: BigInt!
+  lastPrice: BigInt!               # Last price traded
+  onDex: Boolean!
+  onDexSince: BigInt
+  reachedOneMillions: Boolean!
 }
 
 # User entity represents addresses interacting with the platform

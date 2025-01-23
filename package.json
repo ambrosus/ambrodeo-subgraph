@@ -6,8 +6,8 @@
     "build": "run-s codegen && graph build",
     "buildonly": "graph build",
     "codegen": "graph codegen --output-dir src/types/",
-    "create": "graph create --node https://graph-node-api.ambrosus-test.io/deploy airdao/ambrodeo-new",
-    "deploy": "graph deploy --node https://graph-node-api.ambrosus-test.io/deploy airdao/ambrodeo-new",
+    "create": "graph create --node https://graph-node-api.ambrosus-test.io/deploy airdao/ambrodeo-new-test-2",
+    "deploy": "graph deploy --node https://graph-node-api.ambrosus-test.io/deploy airdao/ambrodeo-new-test-2",
     "create-local": "graph create airdao/ambrodeo --node http://127.0.0.1:8020",
     "deploy-local": "graph deploy airdao/ambrodeo  --ipfs http://localhost:5001 --node http://127.0.0.1:8020"
   },
