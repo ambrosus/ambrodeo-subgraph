@@ -35,6 +35,7 @@ type Holder @entity {
 # Trade entity captures executed trades between users
 type Trade @entity {
   id: ID!                          # Unique trade identifier
+  hash: String!                    # Transaction hash
   token: Token!                    # Reference to the Token
   user: User!                      # Buyer in the trade
   amount: BigInt!                  # Amount traded

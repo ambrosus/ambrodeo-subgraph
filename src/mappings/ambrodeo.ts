@@ -118,6 +118,7 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   // Create trade record
   const trade = new Trade(tradeId)
   trade.token = tokenAddress
+  trade.hash = event.transaction.hash.toHexString()
   trade.user = traderAddress
   trade.amount = event.params.isBuy ? event.params.amountOut : event.params.amountIn
   trade.price = price
