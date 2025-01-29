@@ -53,6 +53,7 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   // Create initial holder entry for creator
   const holderId = tokenAddress + '-' + event.params.account.toHexString()
   const holder = new Holder(holderId)
+  log.info("Create the holder for new token with id: {}, user id: {}", [holderId, creator.id])
   holder.token = token.id
   holder.user = creator.id
   holder.balance = BigInt.zero()
@@ -86,9 +87,10 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   const holderId = tokenAddress + '-' + traderAddress
   let holder = Holder.load(holderId)
   if (holder === null) {
+    log.info("Got null holder, creating new one with id: {}, user id: {}", [holderId, trader.id])
     holder = new Holder(holderId)
     holder.token = tokenAddress
-    holder.user = traderAddress
+    holder.user = trader.id
     holder.balance = BigInt.fromI32(0)
   }
   
@@ -100,7 +102,7 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   }
   holder.save()
 
-  const price = event.params.isBuy ? event.params.amountOut.div(event.params.amountIn) : event.params.amountIn.div(event.params.amountOut)
+  const price = event.params.isBuy ? event.params.amountIn.div(event.params.amountOut) : event.params.amountOut.div(event.params.amountIn)
   log.info("Price: {}", [price.toString()])
 
   //Update lastPrice
