@@ -1,4 +1,4 @@
-import { log, BigInt, ethereum } from '@graphprotocol/graph-ts'
+import { log, BigInt, BigDecimal, ethereum } from '@graphprotocol/graph-ts'
 import {
   CreateToken as CreateTokenEvent,
   TokenTrade as TokenTradeEvent,
@@ -44,7 +44,7 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   token.symbol = event.params.symbol
   token.createdAt = event.block.timestamp
   token.data = event.params.data
-  token.lastPrice = BigInt.zero()
+  token.lastPrice = BigDecimal.zero()
   token.lastPriceUpdate = event.block.timestamp
   token.onDex = false;
   token.reachedOneMillions = false;
@@ -102,7 +102,12 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   }
   holder.save()
 
-  const price = event.params.isBuy ? event.params.amountIn.div(event.params.amountOut) : event.params.amountOut.div(event.params.amountIn)
+  const amountIdDec = new BigDecimal(event.params.amountIn)
+  const amountOutDec = new BigDecimal(event.params.amountOut)
+  log.info("Price calculation: amountIn: {}, amountOut: {}", [event.params.amountIn.toString(), event.params.amountOut.toString()])
+  log.info("Price calculation: isBuy: {}, excludeFee: {}", [event.params.isBuy.toString(), event.params.excludeFee.toString()])
+  log.info("Price calculation: divide buy: {}, divide sell: {}", [amountIdDec.div(amountOutDec).toString(), amountOutDec.div(amountIdDec).toString()])
+  const price = event.params.isBuy ? amountIdDec.div(amountOutDec) : amountOutDec.div(amountIdDec)
   log.info("Price: {}", [price.toString()])
 
   //Update lastPrice
@@ -153,7 +158,7 @@ export function handleTransferToDex(event: TransferToDexEvent): void {
 // Helper function to update candle data
 function updateCandle(
   token: Token,
-  price: BigInt,
+  price: BigDecimal,
   amount: BigInt,
   timestamp: BigInt
 ): void {
@@ -182,7 +187,7 @@ function updateCandleEntity(
   id: string,
   tokenId: string,
   interval: string,
-  price: BigInt,
+  price: BigDecimal,
   amount: BigInt,
   timestamp: BigInt,
   intervalSeconds: BigInt

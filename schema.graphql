@@ -9,7 +9,7 @@ type Token @entity {
   trades: [Trade!] @derivedFrom(field: "token")
   createdAt: BigInt!               # Timestamp of creation
   lastPriceUpdate: BigInt!
-  lastPrice: BigInt!               # Last price traded
+  lastPrice: BigDecimal!               # Last price traded
   onDex: Boolean!
   onDexSince: BigInt
   reachedOneMillions: Boolean!
@@ -39,7 +39,7 @@ type Trade @entity {
   token: Token!                    # Reference to the Token
   user: User!                      # Buyer in the trade
   amount: BigInt!                  # Amount traded
-  price: BigInt!                   # Price per token at execution
+  price: BigDecimal!                   # Price per token at execution
   fees: BigInt!                    # Fees applied to the trade
   timestamp: BigInt!               # Timestamp of trade execution
   isBuy: Boolean!                  # Indicates if the user is the buyer
@@ -52,9 +52,9 @@ type Candle @entity {
   interval: String!                # Interval type (e.g., "hourly", "daily")
   startTime: BigInt!               # Start time of the interval
   endTime: BigInt!                 # End time of the interval
-  open: BigInt!                    # Opening price
-  high: BigInt!                    # Highest price in the interval
-  low: BigInt!                     # Lowest price in the interval
-  close: BigInt!                   # Closing price
+  open: BigDecimal!                    # Opening price
+  high: BigDecimal!                    # Highest price in the interval
+  low: BigDecimal!                     # Lowest price in the interval
+  close: BigDecimal!                   # Closing price
   volume: BigInt!                  # Total volume traded
 }
