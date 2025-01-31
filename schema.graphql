@@ -15,6 +15,12 @@ type Token @entity {
   reachedOneMillions: Boolean!
 }
 
+type AmbPrice @entity {
+  id: ID!
+  price: BigDecimal!
+  timestamp: BigInt!
+}
+
 # User entity represents addresses interacting with the platform
 type User @entity {
   id: ID!                          # User address
