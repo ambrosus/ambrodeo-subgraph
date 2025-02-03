@@ -30,6 +30,26 @@ dataSources:
           handler: handleTokenTrade
         - event: TransferToDex(indexed address,uint256,uint256,uint256)
           handler: handleTransferToDex
+  - kind: ethereum/contract
+    name: Pair
+    network: ambnet-test
+    source:
+      address: '0xBfa2F9a8E66365249f2418a9c6DebEec83634cA9'  
+      abi: Pair
+      startBlock: 1099895
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/mappings/pair.ts
+      entities:
+        - AMBPrice
+      abis:
+        - name: Pair
+          file: ./abis/pair.json
+      eventHandlers:
+        - event: Sync(uint112,uint112)
+          handler: handleSync
 templates:
   - kind: ethereum/contract
     name: Token

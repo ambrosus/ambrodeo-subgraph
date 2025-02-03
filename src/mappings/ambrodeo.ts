@@ -1,10 +1,10 @@
-import { log, BigInt, BigDecimal, ethereum } from '@graphprotocol/graph-ts'
+import { log, BigInt, BigDecimal } from '@graphprotocol/graph-ts'
 import {
   CreateToken as CreateTokenEvent,
   TokenTrade as TokenTradeEvent,
   TransferToDex as TransferToDexEvent
 } from '../types/AMBRodeo/AMBRodeo'
-import { Token, User, Holder,Trade, Candle } from '../types/schema'
+import { Token, User, Holder,Trade, Candle, LastAmbPrice } from '../types/schema'
 import { Token as TokenTemplate } from '../types/templates'
 
 class Interval {
@@ -102,15 +102,22 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   }
   holder.save()
 
-  const amountIdDec = new BigDecimal(event.params.amountIn)
-  const amountOutDec = new BigDecimal(event.params.amountOut)
-  log.info("Price calculation: amountIn: {}, amountOut: {}", [event.params.amountIn.toString(), event.params.amountOut.toString()])
-  log.info("Price calculation: isBuy: {}, excludeFee: {}", [event.params.isBuy.toString(), event.params.excludeFee.toString()])
-  log.info("Price calculation: divide buy: {}, divide sell: {}", [amountIdDec.div(amountOutDec).toString(), amountOutDec.div(amountIdDec).toString()])
+  const amountIdDec = new BigDecimal(event.params.amountIn).div(BigDecimal.fromString("1e18"))
+  const amountOutDec = new BigDecimal(event.params.amountOut).div(BigDecimal.fromString("1e18"))
   const price = event.params.isBuy ? amountIdDec.div(amountOutDec) : amountOutDec.div(amountIdDec)
-  log.info("Price: {}", [price.toString()])
+
+  let priceUSDC = BigDecimal.fromString('0')
+  const lastAmbPrice = LastAmbPrice.load('1')
+  if (lastAmbPrice === null) {
+      priceUSDC = BigDecimal.fromString('0')
+  } else {
+      priceUSDC = price.times(lastAmbPrice.price)
+  }
+
+
 
   //Update lastPrice
+  const lastPrice = token.lastPrice
   token.lastPrice = price
 
   //Check if is one million amber inside the pool
@@ -129,6 +136,7 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   trade.user = traderAddress
   trade.amount = event.params.isBuy ? event.params.amountOut : event.params.amountIn
   trade.price = price
+  trade.priceUSDC = priceUSDC
   trade.fees = event.params.excludeFee
   trade.timestamp = event.block.timestamp
   trade.isBuy = event.params.isBuy
@@ -138,6 +146,7 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   updateCandle(
     token,
     price,
+    lastPrice,
     event.params.isBuy ? event.params.amountOut : event.params.amountIn,
     event.block.timestamp
   )
@@ -159,6 +168,7 @@ export function handleTransferToDex(event: TransferToDexEvent): void {
 function updateCandle(
   token: Token,
   price: BigDecimal,
+  lastPrice: BigDecimal,
   amount: BigInt,
   timestamp: BigInt
 ): void {
@@ -176,6 +186,7 @@ function updateCandle(
       token.id,
       interval.name,
       price,
+      lastPrice,
       amount,
       timestamp,
       interval.seconds
@@ -188,6 +199,7 @@ function updateCandleEntity(
   tokenId: string,
   interval: string,
   price: BigDecimal,
+  lastPrice: BigDecimal,
   amount: BigInt,
   timestamp: BigInt,
   intervalSeconds: BigInt
@@ -201,7 +213,7 @@ function updateCandleEntity(
     candle.interval = interval
     candle.startTime = startTime
     candle.endTime = startTime.plus(intervalSeconds)
-    candle.open = price
+    candle.open = lastPrice
     candle.high = price
     candle.low = price
     candle.close = price

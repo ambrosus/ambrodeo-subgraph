@@ -21,6 +21,12 @@ type AmbPrice @entity {
   timestamp: BigInt!
 }
 
+type LastAmbPrice @entity {
+  id: ID!                  # Should always be 1
+  price: BigDecimal!
+  timestamp: BigInt!
+}
+
 # User entity represents addresses interacting with the platform
 type User @entity {
   id: ID!                          # User address
@@ -45,7 +51,8 @@ type Trade @entity {
   token: Token!                    # Reference to the Token
   user: User!                      # Buyer in the trade
   amount: BigInt!                  # Amount traded
-  price: BigDecimal!                   # Price per token at execution
+  price: BigDecimal!               # Price per token at execution
+  priceUSDC: BigDecimal!           # Price per token in USDC at execution
   fees: BigInt!                    # Fees applied to the trade
   timestamp: BigInt!               # Timestamp of trade execution
   isBuy: Boolean!                  # Indicates if the user is the buyer
