@@ -13,6 +13,7 @@ type Token @entity {
   onDex: Boolean!
   onDexSince: BigInt
   reachedOneMillions: Boolean!
+  reachedHalfWayToDex: Boolean!
 }
 
 type AmbPrice @entity {
@@ -51,6 +52,8 @@ type Trade @entity {
   token: Token!                    # Reference to the Token
   user: User!                      # Buyer in the trade
   amount: BigInt!                  # Amount traded
+  amountAmb: BigDecimal!           # Amount traded in AMB
+  amountUSDC: BigDecimal!          # Amount traded in USDC
   price: BigDecimal!               # Price per token at execution
   priceUSDC: BigDecimal!           # Price per token in USDC at execution
   fees: BigInt!                    # Fees applied to the trade

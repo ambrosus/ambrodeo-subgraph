@@ -17,6 +17,7 @@ class Interval {
   }
 }
 
+
 const INTERVALS: Interval[] = [
   new Interval("1m", BigInt.fromI32(60)),
   new Interval("5m", BigInt.fromI32(300)),
@@ -48,6 +49,7 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   token.lastPriceUpdate = event.block.timestamp
   token.onDex = false;
   token.reachedOneMillions = false;
+  token.reachedHalfWayToDex = false;
   token.save()
 
   // Create initial holder entry for creator
@@ -102,9 +104,9 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   }
   holder.save()
 
-  const amountIdDec = new BigDecimal(event.params.amountIn).div(BigDecimal.fromString("1e18"))
+  const amountInDec = new BigDecimal(event.params.amountIn).div(BigDecimal.fromString("1e18"))
   const amountOutDec = new BigDecimal(event.params.amountOut).div(BigDecimal.fromString("1e18"))
-  const price = event.params.isBuy ? amountIdDec.div(amountOutDec) : amountOutDec.div(amountIdDec)
+  const price = event.params.isBuy ? amountInDec.div(amountOutDec) : amountOutDec.div(amountInDec)
 
   let priceUSDC = BigDecimal.fromString('0')
   const lastAmbPrice = LastAmbPrice.load('1')
@@ -113,8 +115,6 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   } else {
       priceUSDC = price.times(lastAmbPrice.price)
   }
-
-
 
   //Update lastPrice
   const lastPrice = token.lastPrice
@@ -127,7 +127,14 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
     token.reachedOneMillions = false
   }
 
+  if (event.params.liquidity.ge(event.params.balanceToDex)) {
+    token.reachedHalfWayToDex = true
+  } else {
+    token.reachedHalfWayToDex = false
+  }
+
   token.save()
+
 
   // Create trade record
   const trade = new Trade(tradeId)
@@ -135,6 +142,8 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   trade.hash = event.transaction.hash.toHexString()
   trade.user = traderAddress
   trade.amount = event.params.isBuy ? event.params.amountOut : event.params.amountIn
+  trade.amountAmb = event.params.isBuy ? amountInDec : amountOutDec
+  trade.amountUSDC = event.params.isBuy ? amountOutDec.times(priceUSDC) : amountInDec.times(priceUSDC)
   trade.price = price
   trade.priceUSDC = priceUSDC
   trade.fees = event.params.excludeFee

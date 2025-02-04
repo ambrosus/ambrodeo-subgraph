@@ -226,6 +226,12 @@
         },
         {
           "indexed": false,
+          "internalType": "uint256",
+          "name": "balanceToDex",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
           "internalType": "bool",
           "name": "isBuy",
           "type": "bool"
@@ -417,6 +423,25 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "getTokenSales",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "getTotalSupply",
       "outputs": [
@@ -430,7 +455,60 @@
       "type": "function"
     },
     {
-      "inputs": [],
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bool",
+              "name": "createToken",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "tokenImplemetation",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "dex",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "balanceToDex",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "createFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "exchangeFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalSupply",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "virtualLiquidity",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "initLiquidity",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct AMBRodeo.Settings",
+          "name": "_settings",
+          "type": "tuple"
+        }
+      ],
       "name": "initialize",
       "outputs": [],
       "stateMutability": "nonpayable",
