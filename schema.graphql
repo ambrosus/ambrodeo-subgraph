@@ -7,29 +7,33 @@ type Token @entity {
   data: Bytes!                     # URL to the token image
   holders: [Holder!] @derivedFrom(field: "token")
   trades: [Trade!] @derivedFrom(field: "token")
-  totalLiquidity: BigInt!          # Total liquidity
-  totalAmb: BigInt!                # Total liquidity in AMB
+  totalLiquidity: BigInt!          # The total token sold
+  totalAmb: BigInt!                # The total amount of amb spend on the token
   createdAt: BigInt!               # Timestamp of creation
-  lastPriceUpdate: BigInt!
+  lastPriceUpdate: BigInt!         # Timestamp of the last price updated
   lastPrice: BigDecimal!           # Last price traded
-  onDex: Boolean!
-  onDexSince: BigInt
-  reachedOneMillions: Boolean!
-  reachedOneMillionsAt: BigInt
-  reachedHalfWayToDex: Boolean!
-  reachedHalfWayToDexAt: BigInt
+  onDex: Boolean!                  # Indicates if the token is listed on the DEX
+  onDexSince: BigInt               # Timestamp of listing on the DEX
+  reachedOneMillions: Boolean!     # Indicates if the token reached 1M in total liquidity
+  reachedOneMillionsAt: BigInt     # Timestamp of reaching 1M in total liquidity
+  reachedHalfWayToDex: Boolean!    # Indicates if the token reached half way to be listed on the DEX
+  reachedHalfWayToDexAt: BigInt    # Timestamp of reaching half way to be listed on the DEX
 }
 
+
+# The history of abm price in USDC from the Astra Dex
 type AmbPrice @entity {
-  id: ID!
-  price: BigDecimal!
-  timestamp: BigInt!
+  id: ID!                  # Unique identifier
+  price: BigDecimal!       # Price in USDC
+  timestamp: BigInt!       # Timestamp of the price
 }
 
+# The last amb price in USDC from the Astra Dex
+# Used to calculate buy price is USDC
 type LastAmbPrice @entity {
   id: ID!                  # Should always be 1
-  price: BigDecimal!
-  timestamp: BigInt!
+  price: BigDecimal!       # Price in USDC
+  timestamp: BigInt!       # Timestamp of the price
 }
 
 # User entity represents addresses interacting with the platform
@@ -72,9 +76,9 @@ type Candle @entity {
   interval: String!                # Interval type (e.g., "hourly", "daily")
   startTime: BigInt!               # Start time of the interval
   endTime: BigInt!                 # End time of the interval
-  open: BigDecimal!                    # Opening price
-  high: BigDecimal!                    # Highest price in the interval
-  low: BigDecimal!                     # Lowest price in the interval
-  close: BigDecimal!                   # Closing price
+  open: BigDecimal!                # Opening price
+  high: BigDecimal!                # Highest price in the interval
+  low: BigDecimal!                 # Lowest price in the interval
+  close: BigDecimal!               # Closing price
   volume: BigInt!                  # Total volume traded
 }

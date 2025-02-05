@@ -50,6 +50,8 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   token.onDex = false;
   token.reachedOneMillions = false;
   token.reachedHalfWayToDex = false;
+  token.totalLiquidity = BigInt.fromI32(0)
+  token.totalAmb = BigInt.fromI32(0)
   token.save()
 
   // Start indexing events from the new token contract
