@@ -52,15 +52,6 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   token.reachedHalfWayToDex = false;
   token.save()
 
-  // Create initial holder entry for creator
-  const holderId = tokenAddress + '-' + event.params.account.toHexString()
-  const holder = new Holder(holderId)
-  log.info("Create the holder for new token with id: {}, user id: {}", [holderId, creator.id])
-  holder.token = token.id
-  holder.user = creator.id
-  holder.balance = BigInt.zero()
-  holder.save()
-
   // Start indexing events from the new token contract
   TokenTemplate.create(event.params.token)
 }
@@ -123,15 +114,22 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   //Check if is one million amber inside the pool
   if (event.params.liquidity.ge(BigInt.fromI32(1000000))) {
     token.reachedOneMillions = true
+    token.reachedOneMillionsAt = event.block.timestamp
   } else {
     token.reachedOneMillions = false
+    token.reachedOneMillionsAt = BigInt.fromI32(0)
   }
 
   if (event.params.liquidity.ge(event.params.balanceToDex)) {
     token.reachedHalfWayToDex = true
+    token.reachedOneMillionsAt = event.block.timestamp
   } else {
     token.reachedHalfWayToDex = false
+    token.reachedHalfWayToDexAt = BigInt.fromI32(0)
   }
+
+  token.totalLiquidity = event.params.isBuy ? token.totalLiquidity.plus(event.params.amountOut) : token.totalLiquidity.minus(event.params.amountIn)
+  token.totalAmb = event.params.isBuy ? token.totalAmb.plus(event.params.amountIn) : token.totalAmb.minus(event.params.amountOut)
 
   token.save()
 

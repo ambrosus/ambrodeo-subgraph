@@ -7,13 +7,17 @@ type Token @entity {
   data: Bytes!                     # URL to the token image
   holders: [Holder!] @derivedFrom(field: "token")
   trades: [Trade!] @derivedFrom(field: "token")
+  totalLiquidity: BigInt!          # Total liquidity
+  totalAmb: BigInt!                # Total liquidity in AMB
   createdAt: BigInt!               # Timestamp of creation
   lastPriceUpdate: BigInt!
-  lastPrice: BigDecimal!               # Last price traded
+  lastPrice: BigDecimal!           # Last price traded
   onDex: Boolean!
   onDexSince: BigInt
   reachedOneMillions: Boolean!
+  reachedOneMillionsAt: BigInt
   reachedHalfWayToDex: Boolean!
+  reachedHalfWayToDexAt: BigInt
 }
 
 type AmbPrice @entity {
