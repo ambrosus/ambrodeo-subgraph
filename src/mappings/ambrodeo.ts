@@ -50,7 +50,8 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   token.onDex = false;
   token.reachedOneMillions = false;
   token.reachedHalfWayToDex = false;
-  token.totalLiquidity = BigInt.fromI32(0)
+  token.liquidity = BigInt.fromI32(0)
+  token.totalToken = BigInt.fromI32(0)
   token.totalAmb = BigInt.fromI32(0)
   token.save()
 
@@ -130,8 +131,10 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
     token.reachedHalfWayToDexAt = BigInt.fromI32(0)
   }
 
-  token.totalLiquidity = event.params.isBuy ? token.totalLiquidity.plus(event.params.amountOut) : token.totalLiquidity.minus(event.params.amountIn)
+  token.totalToken = event.params.isBuy ? token.totalToken.plus(event.params.amountOut) : token.totalToken.minus(event.params.amountIn)
   token.totalAmb = event.params.isBuy ? token.totalAmb.plus(event.params.amountIn) : token.totalAmb.minus(event.params.amountOut)
+
+  token.liquidity = event.params.liquidity
 
   token.save()
 

@@ -7,7 +7,8 @@ type Token @entity {
   data: Bytes!                     # URL to the token image
   holders: [Holder!] @derivedFrom(field: "token")
   trades: [Trade!] @derivedFrom(field: "token")
-  totalLiquidity: BigInt!          # The total token sold
+  liquidity: BigInt!               # Liquidity
+  totalToken: BigInt!              # The total token sold
   totalAmb: BigInt!                # The total amount of amb spend on the token
   createdAt: BigInt!               # Timestamp of creation
   lastPriceUpdate: BigInt!         # Timestamp of the last price updated
