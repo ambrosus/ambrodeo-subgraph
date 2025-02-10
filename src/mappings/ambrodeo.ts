@@ -115,7 +115,7 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   token.lastPrice = price
 
   //Check if is one million amber inside the pool
-  if (event.params.liquidity.ge(BigInt.fromI32(1000000))) {
+  if (event.params.liquidity.ge(BigInt.fromI32(1000000 * (10 ** 18)))) {
     token.reachedOneMillions = true
     token.reachedOneMillionsAt = event.block.timestamp
   } else {
@@ -123,7 +123,7 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
     token.reachedOneMillionsAt = BigInt.fromI32(0)
   }
 
-  if (event.params.liquidity.ge(event.params.balanceToDex)) {
+  if (event.params.liquidity.ge(event.params.balanceToDex.div(BigInt.fromI32(2)))) {
     token.reachedHalfWayToDex = true
     token.reachedOneMillionsAt = event.block.timestamp
   } else {
@@ -184,6 +184,10 @@ function updateCandle(
   amount: BigInt,
   timestamp: BigInt
 ): void {
+  // If it's the first trade ever - the lastPrice is the current price
+  if (lastPrice.equals(BigDecimal.zero())) {
+    lastPrice = price
+  }
   // Update candles for all intervals
   for (let i = 0; i < INTERVALS.length; i++) {
     const interval = INTERVALS[i];
