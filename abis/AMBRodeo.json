@@ -108,6 +108,12 @@
         },
         {
           "indexed": false,
+          "internalType": "uint256",
+          "name": "totalSupply",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
           "internalType": "bytes",
           "name": "data",
           "type": "bytes"
@@ -490,12 +496,22 @@
             },
             {
               "internalType": "uint256",
+              "name": "toDexFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
               "name": "totalSupply",
               "type": "uint256"
             },
             {
               "internalType": "uint256",
               "name": "virtualLiquidity",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "virtualToken",
               "type": "uint256"
             },
             {
@@ -703,6 +719,19 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "setVirtualToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "settings",
       "outputs": [
@@ -738,12 +767,22 @@
         },
         {
           "internalType": "uint256",
+          "name": "toDexFee",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
           "name": "totalSupply",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
           "name": "virtualLiquidity",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "virtualToken",
           "type": "uint256"
         },
         {

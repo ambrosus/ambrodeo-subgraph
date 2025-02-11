@@ -4,8 +4,10 @@ import {
   TokenTrade as TokenTradeEvent,
   TransferToDex as TransferToDexEvent
 } from '../types/AMBRodeo/AMBRodeo'
-import { Token, User, Holder,Trade, Candle, LastAmbPrice } from '../types/schema'
+import { Token, User, Holder,Trade, Candle, LastAmbPrice, Platform } from '../types/schema'
 import { Token as TokenTemplate } from '../types/templates'
+
+const AMBRODEO_ADDRESS = '0xCE053020E337E212F71D330199968c39cAc510B8'
 
 class Interval {
   name: string
@@ -16,7 +18,6 @@ class Interval {
     this.seconds = seconds
   }
 }
-
 
 const INTERVALS: Interval[] = [
   new Interval("1m", BigInt.fromI32(60)),
@@ -29,11 +30,19 @@ const INTERVALS: Interval[] = [
 ];
 
 export function handleCreateToken(event: CreateTokenEvent): void {
+  let platform = Platform.load('1')
+  if (platform === null) {
+    platform = new Platform('1')
+    platform.totalTokens = BigInt.fromI32(0)
+    platform.totalUsers = BigInt.fromI32(0)
+    platform.totalTrades = BigInt.fromI32(0)
+    platform.save()
+  }
   // Create or load the creator user
   let creator = User.load(event.params.account.toHexString())
   if (creator === null) {
     creator = new User(event.params.account.toHexString())
-    creator.isInsider = false
+    platform.totalUsers = platform.totalUsers.plus(BigInt.fromI32(1))
     creator.save()
   }
 
@@ -54,12 +63,33 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   token.totalToken = BigInt.fromI32(0)
   token.totalAmb = BigInt.fromI32(0)
   token.save()
+  platform.totalTokens = platform.totalTokens.plus(BigInt.fromI32(1))
+  
+  let contractUser = User.load(AMBRODEO_ADDRESS)
+  if (contractUser === null) {
+      contractUser = new User(AMBRODEO_ADDRESS)
+      contractUser.save()
+  }
+
+  let holderId = new Holder(tokenAddress + '-' + AMBRODEO_ADDRESS)
+  let holder = new Holder(holderId.id)
+  holder.token = tokenAddress
+  holder.user = contractUser.id
+  holder.balance = event.params.totalSupply
+  holder.save()
+
+  platform.save()
 
   // Start indexing events from the new token contract
   TokenTemplate.create(event.params.token)
 }
 
 export function handleTokenTrade(event: TokenTradeEvent): void {
+  let platform = Platform.load('1')
+  if (platform === null) {
+      throw new Error('Platform not found')
+  }
+
   const tokenAddress = event.params.token.toHexString()
   const traderAddress = event.params.account.toHexString()
   const tradeId = tokenAddress + '-' + event.transaction.hash.toHexString() + '-' + event.logIndex.toString()
@@ -68,23 +98,22 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   let trader = User.load(traderAddress)
   if (trader === null) {
     trader = new User(traderAddress)
-    trader.isInsider = false
+    platform.totalUsers = platform.totalUsers.plus(BigInt.fromI32(1))
     trader.save()
   }
 
   // Load token and update supply
   const token = Token.load(tokenAddress)
   if (token === null) {
-      log.error('Token not found: {}', [tokenAddress])
-      return
+      throw new Error('Token not found: ' + tokenAddress)
   }
 
   // Update or create holder balance
   const holderId = tokenAddress + '-' + traderAddress
   let holder = Holder.load(holderId)
   if (holder === null) {
-    log.info("Got null holder, creating new one with id: {}, user id: {}", [holderId, trader.id])
     holder = new Holder(holderId)
+    platform.totalHolders = platform.totalUsers.plus(BigInt.fromI32(1))
     holder.token = tokenAddress
     holder.user = trader.id
     holder.balance = BigInt.fromI32(0)
@@ -97,6 +126,21 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
     holder.balance = holder.balance.minus(event.params.amountIn)
   }
   holder.save()
+
+  const contractHolderId = tokenAddress + '-' + AMBRODEO_ADDRESS
+  let contractHolder = Holder.load(contractHolderId)
+
+  if (holder === null) {
+      throw new Error('Contract holder not found')
+  }
+
+  if (event.params.isBuy) {
+    contractHolder!.balance = contractHolder!.balance.minus(event.params.amountIn)
+  } else {
+    contractHolder!.balance = contractHolder!.balance.plus(event.params.amountOut)
+  }
+
+  contractHolder!.save()
 
   const amountInDec = new BigDecimal(event.params.amountIn).div(BigDecimal.fromString("1e18"))
   const amountOutDec = new BigDecimal(event.params.amountOut).div(BigDecimal.fromString("1e18"))
@@ -125,7 +169,7 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
 
   if (event.params.liquidity.ge(event.params.balanceToDex.div(BigInt.fromI32(2)))) {
     token.reachedHalfWayToDex = true
-    token.reachedOneMillionsAt = event.block.timestamp
+    token.reachedHalfWayToDexAt = event.block.timestamp
   } else {
     token.reachedHalfWayToDex = false
     token.reachedHalfWayToDexAt = BigInt.fromI32(0)
@@ -133,11 +177,13 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
 
   token.totalToken = event.params.isBuy ? token.totalToken.plus(event.params.amountOut) : token.totalToken.minus(event.params.amountIn)
   token.totalAmb = event.params.isBuy ? token.totalAmb.plus(event.params.amountIn) : token.totalAmb.minus(event.params.amountOut)
+  
+  platform.totalAmb = event.params.isBuy ? platform.totalAmb.plus(event.params.amountIn) : platform.totalAmb.minus(event.params.amountOut)
+  platform.totalLiquidity = platform.totalLiquidity.minus(token.liquidity).plus(event.params.liquidity)
 
   token.liquidity = event.params.liquidity
 
   token.save()
-
 
   // Create trade record
   const trade = new Trade(tradeId)
@@ -153,7 +199,9 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   trade.timestamp = event.block.timestamp
   trade.isBuy = event.params.isBuy
   trade.save()
+  platform.totalTrades = platform.totalTrades.plus(BigInt.fromI32(1))
 
+  platform.save()
   // Update candle data
   updateCandle(
     token,
@@ -174,6 +222,13 @@ export function handleTransferToDex(event: TransferToDexEvent): void {
   token.onDex = true;
   token.onDexSince = event.block.timestamp;
   token.save();
+
+  const platform = Platform.load('1')
+  if (platform === null) {
+      throw new Error('Platform not found')
+  }
+  platform.totalTokensOnDex = platform.totalTokensOnDex.plus(BigInt.fromI32(1))
+  platform.save()
 }
 
 // Helper function to update candle data
