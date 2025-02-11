@@ -36,6 +36,10 @@ export function handleCreateToken(event: CreateTokenEvent): void {
     platform.totalTokens = BigInt.fromI32(0)
     platform.totalUsers = BigInt.fromI32(0)
     platform.totalTrades = BigInt.fromI32(0)
+    platform.totalHolders = BigInt.fromI32(0)
+    platform.totalAmb = BigInt.fromI32(0)
+    platform.totalLiquidity = BigInt.fromI32(0)
+    platform.totalTokensOnDex = BigInt.fromI32(0)
     platform.save()
   }
   // Create or load the creator user
