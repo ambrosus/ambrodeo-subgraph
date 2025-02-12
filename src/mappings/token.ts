@@ -17,7 +17,6 @@ export function handleTransfer(event: Transfer): void {
   let fromHolder = Holder.load(fromHolderId)
   if (fromHolder === null) {
     fromHolder = new Holder(fromHolderId)
-    platform.totalHolders = platform.totalHolders.plus(BigInt.fromI32(1))
     fromHolder.token = token.id
     fromHolder.user = event.params.from.toHexString()
     fromHolder.balance = BigInt.fromI32(0)
@@ -25,6 +24,9 @@ export function handleTransfer(event: Transfer): void {
   let fromUser = User.load(event.params.from.toHexString())
   if (fromUser === null) {
     fromUser = new User(event.params.from.toHexString())
+    fromUser.totalTokensCreated = BigInt.fromI32(0)
+    fromUser.totalTrades = BigInt.fromI32(0)
+    fromUser.isInsider = false
     platform.totalUsers = platform.totalUsers.plus(BigInt.fromI32(1))
     fromUser.save()
   }
@@ -40,7 +42,6 @@ export function handleTransfer(event: Transfer): void {
   let toHolder = Holder.load(toHolderId)
   if (toHolder === null) {
     toHolder = new Holder(toHolderId)
-    platform.totalHolders = platform.totalHolders.plus(BigInt.fromI32(1))
     toHolder.token = token.id
     toHolder.user = event.params.to.toHexString()
     toHolder.balance = BigInt.fromI32(0)
@@ -48,6 +49,9 @@ export function handleTransfer(event: Transfer): void {
   let toUser = User.load(event.params.to.toHexString())
   if (toUser === null) {
     toUser = new User(event.params.to.toHexString())
+    toUser.totalTokensCreated = BigInt.fromI32(0)
+    toUser.totalTrades = BigInt.fromI32(0)
+    toUser.isInsider = false
     platform.totalUsers = platform.totalUsers.plus(BigInt.fromI32(1))
     toUser.save()
   }

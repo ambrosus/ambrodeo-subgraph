@@ -8,7 +8,7 @@ dataSources:
     name: AMBRodeo
     network: ambnet-test
     source:
-      address: '0xCE053020E337E212F71D330199968c39cAc510B8'
+      address: '0x833Ae768cC7568c567983E05671d2d528609B862'
       abi: AMBRodeo
       startBlock: 2800000
     mapping:
@@ -30,6 +30,8 @@ dataSources:
           handler: handleTokenTrade
         - event: TransferToDex(indexed address,uint256,uint256,uint256)
           handler: handleTransferToDex
+        - event: LiquidityTrade(address,uint256,uint256,uint256,uint256)
+          handler: handleLiquidityTrade
   - kind: ethereum/contract
     name: Pair
     network: ambnet-test

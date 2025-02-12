@@ -2,12 +2,13 @@ import { log, BigInt, BigDecimal } from '@graphprotocol/graph-ts'
 import {
   CreateToken as CreateTokenEvent,
   TokenTrade as TokenTradeEvent,
-  TransferToDex as TransferToDexEvent
+  TransferToDex as TransferToDexEvent,
+  LiquidityTrade as LiquidityTradeEvent
 } from '../types/AMBRodeo/AMBRodeo'
-import { Token, User, Holder,Trade, Candle, LastAmbPrice, Platform } from '../types/schema'
+import { Token, User,Trade, Candle, LastAmbPrice, Platform } from '../types/schema'
 import { Token as TokenTemplate } from '../types/templates'
 
-const AMBRODEO_ADDRESS = '0xCE053020E337E212F71D330199968c39cAc510B8'
+const AMBRODEO_ADDRESS = '0x833Ae768cC7568c567983E05671d2d528609B862'
 
 class Interval {
   name: string
@@ -36,7 +37,6 @@ export function handleCreateToken(event: CreateTokenEvent): void {
     platform.totalTokens = BigInt.fromI32(0)
     platform.totalUsers = BigInt.fromI32(0)
     platform.totalTrades = BigInt.fromI32(0)
-    platform.totalHolders = BigInt.fromI32(0)
     platform.totalAmb = BigInt.fromI32(0)
     platform.totalLiquidity = BigInt.fromI32(0)
     platform.totalTokensOnDex = BigInt.fromI32(0)
@@ -46,9 +46,14 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   let creator = User.load(event.params.account.toHexString())
   if (creator === null) {
     creator = new User(event.params.account.toHexString())
+    creator.totalTokensCreated = BigInt.fromI32(0)
+    creator.totalTrades = BigInt.fromI32(0)
+    creator.isInsider = true;
     platform.totalUsers = platform.totalUsers.plus(BigInt.fromI32(1))
     creator.save()
   }
+  creator.totalTokensCreated = creator.totalTokensCreated.plus(BigInt.fromI32(1))
+  creator.save()
 
   // Create the token entity
   const tokenAddress = event.params.token.toHexString()
@@ -66,26 +71,54 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   token.liquidity = BigInt.fromI32(0)
   token.totalToken = BigInt.fromI32(0)
   token.totalAmb = BigInt.fromI32(0)
+  token.totalTrades = BigInt.fromI32(0)
+  token.totalHolders = BigInt.fromI32(0)
+  token.totalSupply = event.params.totalSupply
   token.save()
   platform.totalTokens = platform.totalTokens.plus(BigInt.fromI32(1))
   
   let contractUser = User.load(AMBRODEO_ADDRESS)
   if (contractUser === null) {
-      contractUser = new User(AMBRODEO_ADDRESS)
-      contractUser.save()
+    contractUser = new User(AMBRODEO_ADDRESS)
+    contractUser.totalTokensCreated = BigInt.fromI32(0)
+    contractUser.totalTrades = BigInt.fromI32(0)
+    contractUser.isInsider = false;
+    contractUser.save()
   }
-
-  let holderId = new Holder(tokenAddress + '-' + AMBRODEO_ADDRESS)
-  let holder = new Holder(holderId.id)
-  holder.token = tokenAddress
-  holder.user = contractUser.id
-  holder.balance = event.params.totalSupply
-  holder.save()
 
   platform.save()
 
   // Start indexing events from the new token contract
   TokenTemplate.create(event.params.token)
+}
+
+export function handleLiquidityTrade(event: LiquidityTradeEvent): void {
+    const totalToken = event.params.tokenBlanace.plus(event.params.virtualToken)
+    const totalTokenDec = new BigDecimal(totalToken).div(BigDecimal.fromString("1e18"))
+    log.info('Total Token: {}', [totalTokenDec.toString()])
+    const liquidityDec = new BigDecimal(event.params.liquidity).div(BigDecimal.fromString("1e18"))
+    log.info('Liquidity: {}', [liquidityDec.toString()])
+    let price = liquidityDec.div(totalTokenDec)
+    log.info('Price: {}', [price.toString()])
+
+    let token = Token.load(event.params.token.toHexString())
+    if (token === null) {
+        throw new Error('Token not found: ' + event.params.token.toHexString())
+    }
+    
+    const lastPrice = token.lastPrice
+    log.info('Last Price: {}', [lastPrice.toString()])
+    token.lastPrice = price
+    token.lastPriceUpdate = event.block.timestamp
+    token.save()
+
+    // Update candle prices
+    updateCandlePrice(
+      token,
+      price,
+      lastPrice,
+      event.block.timestamp
+    )
 }
 
 export function handleTokenTrade(event: TokenTradeEvent): void {
@@ -102,50 +135,20 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   let trader = User.load(traderAddress)
   if (trader === null) {
     trader = new User(traderAddress)
+    trader.totalTokensCreated = BigInt.fromI32(0)
+    trader.totalTrades = BigInt.fromI32(0)
+    trader.isInsider = false;
     platform.totalUsers = platform.totalUsers.plus(BigInt.fromI32(1))
     trader.save()
   }
+
+  trader.totalTrades = trader.totalTrades.plus(BigInt.fromI32(1))
 
   // Load token and update supply
   const token = Token.load(tokenAddress)
   if (token === null) {
       throw new Error('Token not found: ' + tokenAddress)
   }
-
-  // Update or create holder balance
-  const holderId = tokenAddress + '-' + traderAddress
-  let holder = Holder.load(holderId)
-  if (holder === null) {
-    holder = new Holder(holderId)
-    platform.totalHolders = platform.totalUsers.plus(BigInt.fromI32(1))
-    holder.token = tokenAddress
-    holder.user = trader.id
-    holder.balance = BigInt.fromI32(0)
-  }
-  
-  // Update holder balance based on input/output
-  if (event.params.isBuy) {
-    holder.balance = holder.balance.plus(event.params.amountOut)
-  } else {
-    holder.balance = holder.balance.minus(event.params.amountIn)
-  }
-  holder.save()
-
-  const contractHolderId = tokenAddress + '-' + AMBRODEO_ADDRESS
-  let contractHolder = Holder.load(contractHolderId)
-
-  if (holder === null) {
-      throw new Error('Contract holder not found')
-  }
-
-  if (event.params.isBuy) {
-    contractHolder!.balance = contractHolder!.balance.minus(event.params.amountIn)
-  } else {
-    contractHolder!.balance = contractHolder!.balance.plus(event.params.amountOut)
-  }
-
-  contractHolder!.save()
-
   const amountInDec = new BigDecimal(event.params.amountIn).div(BigDecimal.fromString("1e18"))
   const amountOutDec = new BigDecimal(event.params.amountOut).div(BigDecimal.fromString("1e18"))
   const price = event.params.isBuy ? amountInDec.div(amountOutDec) : amountOutDec.div(amountInDec)
@@ -157,10 +160,6 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   } else {
       priceUSDC = price.times(lastAmbPrice.price)
   }
-
-  //Update lastPrice
-  const lastPrice = token.lastPrice
-  token.lastPrice = price
 
   //Check if is one million amber inside the pool
   if (event.params.liquidity.ge(BigInt.fromI32(1000000 * (10 ** 18)))) {
@@ -187,8 +186,6 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
 
   token.liquidity = event.params.liquidity
 
-  token.save()
-
   // Create trade record
   const trade = new Trade(tradeId)
   trade.token = tokenAddress
@@ -203,14 +200,14 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   trade.timestamp = event.block.timestamp
   trade.isBuy = event.params.isBuy
   trade.save()
+  token.totalTrades = token.totalTrades.plus(BigInt.fromI32(1))
   platform.totalTrades = platform.totalTrades.plus(BigInt.fromI32(1))
 
+  token.save()
   platform.save()
-  // Update candle data
-  updateCandle(
+  // Update only volume data in candles
+  updateCandleVolume(
     token,
-    price,
-    lastPrice,
     event.params.isBuy ? event.params.amountOut : event.params.amountIn,
     event.block.timestamp
   )
@@ -235,14 +232,16 @@ export function handleTransferToDex(event: TransferToDexEvent): void {
   platform.save()
 }
 
-// Helper function to update candle data
-function updateCandle(
+// Split into two helper functions - one for price updates and one for volume updates
+function updateCandlePrice(
   token: Token,
   price: BigDecimal,
   lastPrice: BigDecimal,
-  amount: BigInt,
   timestamp: BigInt
 ): void {
+  log.info('Updating candle price for token: {}', [token.id])
+  log.info('Price: {}', [price.toString()])
+  log.info('Last Price: {}', [lastPrice.toString()])
   // If it's the first trade ever - the lastPrice is the current price
   if (lastPrice.equals(BigDecimal.zero())) {
     lastPrice = price
@@ -256,12 +255,36 @@ function updateCandle(
       '-' + 
       timestamp.div(interval.seconds).toString();
     
-    updateCandleEntity(
+    updateCandlePriceEntity(
       candleId,
       token.id,
       interval.name,
       price,
       lastPrice,
+      timestamp,
+      interval.seconds
+    );
+  }
+}
+
+function updateCandleVolume(
+  token: Token,
+  amount: BigInt,
+  timestamp: BigInt
+): void {
+  // Update candles for all intervals
+  for (let i = 0; i < INTERVALS.length; i++) {
+    const interval = INTERVALS[i];
+    const candleId = token.id + 
+      '-' + 
+      interval.name + 
+      '-' + 
+      timestamp.div(interval.seconds).toString();
+    
+    updateCandleVolumeEntity(
+      candleId,
+      token.id,
+      interval.name,
       amount,
       timestamp,
       interval.seconds
@@ -269,12 +292,66 @@ function updateCandle(
   }
 }
 
-function updateCandleEntity(
+function updateCandlePriceEntity(
   id: string,
   tokenId: string,
   interval: string,
   price: BigDecimal,
   lastPrice: BigDecimal,
+  timestamp: BigInt,
+  intervalSeconds: BigInt
+): void {
+  log.info('Updating candle price entity: {}', [id])
+  log.info('Price: {}', [price.toString()])
+  log.info('Last Price: {}', [lastPrice.toString()])
+  let candle = Candle.load(id)
+  log.info('Candle.low: {}', [candle!.low.toString()])
+  log.info('Candle.high: {}', [candle!.high.toString()])
+  log.info('Candle.close: {}', [candle!.close.toString()])
+  log.info('Candle.open: {}', [candle!.open.toString()])
+  const startTime = timestamp.div(intervalSeconds).times(intervalSeconds)
+  
+  if (candle === null) {
+    candle = new Candle(id)
+    log.info('Creating new candle: {}', [id])
+    candle.token = tokenId
+    candle.interval = interval
+    candle.startTime = startTime
+    candle.endTime = startTime.plus(intervalSeconds)
+    candle.open = lastPrice
+    candle.high = price
+    candle.low = price
+    candle.close = price
+    candle.volume = BigInt.fromI32(0)
+  } else {
+    log.info('Updating existing candle: {}', [id])
+    candle.high = price.gt(candle.high) ? price : candle.high
+    log.info('Candle High: {}', [candle.high.toString()])
+    candle.low = price.lt(candle.low) ? price : candle.low
+    log.info('Candle Low: {}', [candle.low.toString()])
+    candle.close = price
+  }
+
+  if (candle.open.equals(BigDecimal.zero())) {
+    candle.open = lastPrice
+  }
+
+  if (candle.low.equals(BigDecimal.zero())) {
+    candle.low = lastPrice
+  }
+
+  log.info('Candle High: {}', [candle.high.toString()])
+  log.info('Candle Low: {}', [candle.low.toString()])
+  log.info('Candle Close: {}', [candle.close.toString()])
+  log.info('Candle open: {}', [candle.open.toString()])
+
+  candle.save()
+}
+
+function updateCandleVolumeEntity(
+  id: string,
+  tokenId: string,
+  interval: string,
   amount: BigInt,
   timestamp: BigInt,
   intervalSeconds: BigInt
@@ -288,15 +365,12 @@ function updateCandleEntity(
     candle.interval = interval
     candle.startTime = startTime
     candle.endTime = startTime.plus(intervalSeconds)
-    candle.open = lastPrice
-    candle.high = price
-    candle.low = price
-    candle.close = price
+    candle.open = BigDecimal.zero()
+    candle.high = BigDecimal.zero()
+    candle.low = BigDecimal.zero()
+    candle.close = BigDecimal.zero()
     candle.volume = amount
   } else {
-    candle.high = price.gt(candle.high) ? price : candle.high
-    candle.low = price.lt(candle.low) ? price : candle.low
-    candle.close = price
     candle.volume = candle.volume.plus(amount)
   }
   

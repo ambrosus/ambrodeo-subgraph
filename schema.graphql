@@ -15,6 +15,7 @@ type Token @entity {
   lastPrice: BigDecimal!           # Last price traded
   totalTrades: BigInt!             # Total trades
   totalHolders: BigInt!            # Total holders
+  totalSupply: BigInt!             # Total supply
   onDex: Boolean!                  # Indicates if the token is listed on the DEX
   onDexSince: BigInt               # Timestamp of listing on the DEX
   reachedOneMillions: Boolean!     # Indicates if the token reached 1M in total liquidity
@@ -28,7 +29,6 @@ type Platform @entity {
     totalTokens: BigInt!      # Total tokens created
     totalUsers: BigInt!       # Total users
     totalTrades: BigInt!      # Total trades
-    totalHolders: BigInt!     # Total holdings
     totalLiquidity: BigInt!   # Total liquidity
     totalAmb: BigInt!         # Total AMB spent
     totalTokensOnDex: BigInt! # Total tokens listed on the DEX
@@ -55,9 +55,8 @@ type User @entity {
   tokensCreated: [Token!] @derivedFrom(field: "creator")
   trades: [Trade!] @derivedFrom(field: "user")
   holdings: [Holder!] @derivedFrom(field: "user")
+  isInsider: Boolean!              # Indicates if the user is an insider
   totalTokensCreated: BigInt!      # Total tokens created
-  totalHoldings: BigInt!           # Total holdings    
-  totalNonZeroHoldings: BigInt!    # Total non-zero holdings
   totalTrades: BigInt!             # Total trades
 }
 
