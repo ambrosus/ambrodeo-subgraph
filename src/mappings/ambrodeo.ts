@@ -61,6 +61,7 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   const token = new Token(tokenAddress)
   token.creator = creator.id
   token.name = event.params.name.toString()
+  token.nameLowerCase = event.params.name.toString().toLowerCase()
   token.symbol = event.params.symbol
   token.createdAt = event.block.timestamp
   token.data = event.params.data

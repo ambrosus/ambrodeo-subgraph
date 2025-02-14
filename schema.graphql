@@ -3,6 +3,7 @@ type Token @entity {
   id: ID!                          # Unique identifier (token address)
   creator: User!                   # Reference to the creator (User entity)
   name: String!                    # Token name
+  nameLowerCase: String!           # Token name in lower case
   symbol: String!                  # Token symbol
   data: Bytes!                     # URL to the token image
   holders: [Holder!] @derivedFrom(field: "token")
