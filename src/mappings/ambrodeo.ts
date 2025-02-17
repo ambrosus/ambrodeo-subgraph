@@ -39,7 +39,6 @@ export function handleCreateToken(event: CreateTokenEvent): void {
     platform.totalUsers = BigInt.fromI32(0)
     platform.totalTrades = BigInt.fromI32(0)
     platform.totalAmb = BigInt.fromI32(0)
-    platform.totalLiquidity = BigInt.fromI32(0)
     platform.totalTokensOnDex = BigInt.fromI32(0)
     platform.save()
   }
@@ -71,8 +70,9 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   token.reachedOneMillions = false;
   token.reachedHalfWayToDex = false;
   token.liquidity = BigInt.fromI32(0)
-  token.totalToken = BigInt.fromI32(0)
-  token.totalAmb = BigInt.fromI32(0)
+  token.totalTokenLiquidity = BigInt.fromI32(0)
+  token.totalTokenSold = BigInt.fromI32(0)
+  token.totalAmbSpend = BigInt.fromI32(0)
   token.totalTrades = BigInt.fromI32(0)
   token.totalHolders = BigInt.fromI32(0)
   token.totalSupply = event.params.totalSupply
@@ -108,6 +108,8 @@ export function handleLiquidityTrade(event: LiquidityTradeEvent): void {
     const lastPrice = token.lastPrice
     token.lastPrice = price
     token.lastPriceUpdate = event.block.timestamp
+    token.liquidity = event.params.liquidity
+    token.totalTokenLiquidity = totalToken
     token.save()
 
     // Update candle prices
@@ -178,11 +180,10 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
     token.reachedHalfWayToDexAt = BigInt.fromI32(0)
   }
 
-  token.totalToken = event.params.isBuy ? token.totalToken.plus(event.params.amountOut) : token.totalToken.minus(event.params.excludeFee)
-  token.totalAmb = event.params.isBuy ? token.totalAmb.plus(event.params.excludeFee) : token.totalAmb.minus(event.params.amountOut)
+  token.totalTokenSold = event.params.isBuy ? token.totalTokenSold.plus(event.params.amountOut) : token.totalTokenSold.minus(event.params.excludeFee)
+  token.totalAmbSpend = event.params.isBuy ? token.totalAmbSpend.plus(event.params.excludeFee) : token.totalAmbSpend.minus(event.params.amountOut)
   
   platform.totalAmb = event.params.isBuy ? platform.totalAmb.plus(event.params.excludeFee) : platform.totalAmb.minus(event.params.amountOut)
-  platform.totalLiquidity = platform.totalLiquidity.minus(token.liquidity).plus(event.params.liquidity)
 
   token.liquidity = event.params.liquidity
 
@@ -191,7 +192,7 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
   trade.token = tokenAddress
   trade.hash = event.transaction.hash.toHexString()
   trade.user = traderAddress
-  trade.amount = event.params.isBuy ? event.params.amountOut : event.params.excludeFee
+  trade.amount = event.params.isBuy ? event.params.amountOut : event.params.amountIn
   trade.amountAmb = event.params.isBuy ? amountInDec : amountOutDec
   trade.amountUSDC = event.params.isBuy ? amountOutDec.times(priceUSDC) : amountInDec.times(priceUSDC)
   trade.price = price

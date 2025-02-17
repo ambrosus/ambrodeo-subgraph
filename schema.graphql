@@ -1,3 +1,19 @@
+type _Schema_ @fulltext(
+  name: "tokenSearch",
+  language: en,
+  algorithm: rank,
+  include: [
+    {
+      entity: "Token",
+      fields: [
+        { name: "name" },
+        { name: "nameLowerCase" },
+        { name: "symbol" }
+      ]
+    }
+  ]
+)
+
 # Token entity represents each ERC20 token created by the Token Factory
 type Token @entity {
   id: ID!                          # Unique identifier (token address)
@@ -8,9 +24,10 @@ type Token @entity {
   data: Bytes!                     # URL to the token image
   holders: [Holder!] @derivedFrom(field: "token")
   trades: [Trade!] @derivedFrom(field: "token")
-  liquidity: BigInt!               # Liquidity
-  totalToken: BigInt!              # The total token sold
-  totalAmb: BigInt!                # The total amount of amb spend on the token
+  liquidity: BigInt!               # Liquidity + virtualLiquidity
+  totalTokenLiquidity: BigInt!     # Total token liquidity (token balance + virtualToken)
+  totalTokenSold: BigInt!          # The total token sold
+  totalAmbSpend: BigInt!           # The total amount of amb spend on the token
   createdAt: BigInt!               # Timestamp of creation
   lastPriceUpdate: BigInt!         # Timestamp of the last price updated
   lastPrice: BigDecimal!           # Last price traded
@@ -30,7 +47,6 @@ type Platform @entity {
     totalTokens: BigInt!      # Total tokens created
     totalUsers: BigInt!       # Total users
     totalTrades: BigInt!      # Total trades
-    totalLiquidity: BigInt!   # Total liquidity
     totalAmb: BigInt!         # Total AMB spent
     totalTokensOnDex: BigInt! # Total tokens listed on the DEX
 }
