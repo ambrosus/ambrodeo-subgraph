@@ -62,6 +62,7 @@ export function handleCreateToken(event: CreateTokenEvent): void {
   token.name = event.params.name.toString()
   token.nameLowerCase = event.params.name.toString().toLowerCase()
   token.symbol = event.params.symbol
+  token.symbolLowerCase = event.params.symbol.toString().toLowerCase()
   token.createdAt = event.block.timestamp
   token.data = event.params.data
   token.lastPrice = BigDecimal.zero()
