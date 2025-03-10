@@ -151,7 +151,7 @@ export function handleTokenTrade(event: TokenTradeEvent): void {
       throw new Error('Token not found: ' + tokenAddress)
   }
   const amountInDec = event.params.isBuy ? new BigDecimal(event.params.excludeFee).div(BigDecimal.fromString("1e18")): new BigDecimal(event.params.amountIn).div(BigDecimal.fromString("1e18"))
-  const amountOutDec = new BigDecimal(event.params.amountOut).div(BigDecimal.fromString("1e18"))
+  const amountOutDec = event.params.isBuy ? new BigDecimal(event.params.amountOut).div(BigDecimal.fromString("1e18")): new BigDecimal(event.params.excludeFee).div(BigDecimal.fromString("1e18"))
   const price = event.params.isBuy ? amountInDec.div(amountOutDec) : amountOutDec.div(amountInDec)
 
   let priceUSDC = BigDecimal.fromString('0')
