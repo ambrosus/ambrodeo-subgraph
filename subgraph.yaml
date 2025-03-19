@@ -8,7 +8,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: AMBRodeo
-    network: ambnet
+    network: ambnet-test
     source:
       address: '0xFA3c7E85544fcDffc6aCd124Cf48785328065c9d'
       abi: AMBRodeo
@@ -36,7 +36,7 @@ dataSources:
           handler: handleLiquidityTrade
   - kind: ethereum/contract
     name: Pair
-    network: ambnet
+    network: ambnet-test  
     source:
       address: '0xBfa2F9a8E66365249f2418a9c6DebEec83634cA9'  
       abi: Pair
@@ -57,7 +57,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: Token
-    network: ambnet
+    network: ambnet-test
     source:
       abi: Token
     mapping:

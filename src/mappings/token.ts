@@ -16,7 +16,7 @@ export function handleTransfer(event: Transfer): void {
       log.info("from: {}, is not equal to 0x0000000000000000000000000000000000000000", [event.params.from.toHexString()])
       handleFromUser(event, token as Token, tokenContract)
   }
-  if (event.params.to.toHexString() !== '0x0000000000000000000000000000000000000000') {
+  if (event.params.to.toHexString() != '0x0000000000000000000000000000000000000000') {
       handleToUser(event, token as Token, tokenContract)
   }
 }
