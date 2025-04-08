@@ -1,4 +1,4 @@
-import { Address } from "@graphprotocol/graph-ts";
+import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { Token as TokenContract } from "../../types/templates/Token/Token";
 import { Holder, User } from "../../types/schema";
 import { createUser } from "./user";
@@ -14,7 +14,7 @@ export function createHolder(
   const holder = new Holder(holderId);
   holder.token = tokenAddress;
   holder.user = user.id;
-  holder.balance = tokenContract.balanceOf(userAddress);
+  holder.balance = BigInt.fromI32(0);
   user.save();
   holder.save();
   return holder;
