@@ -1,13 +1,14 @@
 import { BigDecimal, BigInt } from '@graphprotocol/graph-ts'
 import { Sync } from '../types/Pair/Pair'
 import { AmbPrice, LastAmbPrice  } from '../types/schema'
+import { X18BD } from './helpers'
 
 export function handleSync(event: Sync): void {
-  let price = new AmbPrice(event.block.timestamp.toString())
+  const price = new AmbPrice(event.block.timestamp.toString())
   
   // Convert reserves to BigDecimal for price calculation
-  let reserve0 = new BigDecimal(event.params.reserve0).div(BigDecimal.fromString('1e18'))
-  let reserve1 = new BigDecimal(event.params.reserve1).div(BigDecimal.fromString('1e18'))
+  const reserve0 = new BigDecimal(event.params.reserve0).div(X18BD)
+  const reserve1 = new BigDecimal(event.params.reserve1).div(X18BD)
   
   // Calculate price (USDC per AMB)
   // Assuming AMB is token0 and USDC is token1
